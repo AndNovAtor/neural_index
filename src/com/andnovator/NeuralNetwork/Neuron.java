@@ -145,8 +145,8 @@ public class Neuron<T> {
         }
     }
     protected NetworkFunction mNetFunc;
-    protected LinkedList<NeuralLink<T>> mInputLinks;
-    protected ArrayList<NeuralLink<T>> mLinksToNeurons;
+    protected LinkedList<NeuralLink<T>> mInputLinks = new LinkedList<>();
+    protected ArrayList<NeuralLink<T>> mLinksToNeurons = new ArrayList<>();
 
     protected double mSumOfCharges;
 };

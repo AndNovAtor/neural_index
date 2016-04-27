@@ -142,7 +142,7 @@ class NeuralNetwork<T>
      *                - the data and targets has to be in the appropriate order u want the network to learn.
      */
 
-    public boolean Train(LinkedList<ArrayList<T> > inData, LinkedList<ArrayList<T>> inTarget ) {
+    public boolean Train(ArrayList<ArrayList<T> > inData, ArrayList<ArrayList<T>> inTarget ) {
         boolean trues = true;
         int iIteration = 0;
         while (trues) {
@@ -405,8 +405,8 @@ class NeuralNetwork<T>
 
     NeuronFactory<T>    mNeuronFactory;       /*!< Member, which is responsible for creating neurons @see SetNeuronFactory */
     TrainAlgorithm<T> mTrainingAlgoritm;      /*!< Member, which is responsible for the way the network will trained @see SetAlgorithm */
-    LinkedList<ArrayList<Neuron<T>>>   mLayers;   /*!< Inner representation of neural networks */
-    ArrayList<Neuron<T>>       mBiasLayer;          /*!< Container for biases */
+    LinkedList<ArrayList<Neuron<T>>>   mLayers = new LinkedList<>();   /*!< Inner representation of neural networks */
+    ArrayList<Neuron<T>> mBiasLayer = new ArrayList<>() ;          /*!< Container for biases */
     int   mInputs, mOutputs, mHidden;      /*!< Number of inputs, outputs and hidden units */
     double     mMeanSquaredError;        /*!< Mean Squared Error which is changing every iteration of the training*/
     double     mMinMSE;          /*!< The biggest Mean Squared Error required for training to stop*/
