@@ -1,4 +1,4 @@
-package com.andnovator.NeuralNetwork;
+package com.andnovator.neural.network;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -62,25 +62,25 @@ public class Neuron<T> {
         mSumOfCharges = 0.0;
 
 
-        for(int i = 0; i < inNeuronsLinkTo.size(); i++){
+        for (Neuron<T> anInNeuronsLinkTo : inNeuronsLinkTo) {
 
             /*
              *		Creating a link, based on Neuron from vector for every neuron in vector
             */
-    
-            NeuralLink<T> pLink = new NeuralLink<T>( inNeuronsLinkTo.get(i), 0.0 );
-    
+
+            NeuralLink<T> pLink = new NeuralLink<>(anInNeuronsLinkTo, 0.0);
+
             /*
              *		Newly created neuron will know who is linked to it, by maintaining a vector of links called mLinksToNeurons.
             */
-    
-            mLinksToNeurons.add( pLink );
-    
+
+            mLinksToNeurons.add(pLink);
+
             /*
              * 		A neuron, which is linked to newly created neuron, will know as well what its linked to, by maintaining a vector of input links.
             */
-    
-            inNeuronsLinkTo.get(i).SetInputLink( pLink );
+
+            anInNeuronsLinkTo.SetInputLink(pLink);
     /*		std::cin.get();
             NeuralLink * pInLink = inNeuronsLinkTo[i].GetInputLink().back();
             pInLink.SetWeightCorrectionTerm(10);
@@ -149,12 +149,10 @@ public class Neuron<T> {
     protected ArrayList<NeuralLink<T>> mLinksToNeurons = new ArrayList<>();
 
     protected double mSumOfCharges;
-};
+}
 
-class OutputLayerNeuronDecorator<T> extends Neuron<T>
-{
-public 
-    OutputLayerNeuronDecorator(Neuron<T> inNeuron) { mOutputCharge = 0; mNeuron = inNeuron; }
+class OutputLayerNeuronDecorator<T> extends Neuron<T> {
+    public OutputLayerNeuronDecorator(Neuron<T> inNeuron) { mOutputCharge = 0; mNeuron = inNeuron; }
 
     public ArrayList<NeuralLink<T>>	GetLinksToNeurons( ) { return mNeuron.GetLinksToNeurons( );}
     public NeuralLink<T>			get( int inIndexOfNeuralLink ) { return ( mNeuron.get( inIndexOfNeuralLink ) );}
@@ -187,7 +185,7 @@ public
     public double PerformTrainingProcess(double inTarget) {
         double res;
         double dErrorInformationTerm = (inTarget - mOutputCharge) * mNeuron.Derivative();
-        res = Math.pow(inTarget - mOutputCharge,2);
+        res = (inTarget - mOutputCharge)*(inTarget - mOutputCharge);
         //std::cout << "dErrorInformationTermOutput: " << dErrorInformationTerm << " as: " << "(" << inTarget << " - " << mOutputCharge << ")" << " * " << mNeuron.Derivative() << " .Derivative of:  " << mNeuron.GetSumOfCharges()<< std::endl;
         //std::cin.get();
 
@@ -229,7 +227,7 @@ public
     protected double mOutputCharge;
     protected Neuron<T> mNeuron;
 
-        };
+}
 
 class HiddenLayerNeuronDecorator<T> extends Neuron<T>
 {

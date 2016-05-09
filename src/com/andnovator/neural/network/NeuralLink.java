@@ -1,4 +1,4 @@
-package com.andnovator.NeuralNetwork;
+package com.andnovator.neural.network;
 
 /**
  Created by novator on 01.11.2015.

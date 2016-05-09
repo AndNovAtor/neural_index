@@ -1,4 +1,4 @@
-package com.andnovator.NeuralNetwork;
+package com.andnovator.neural.network;
 
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
@@ -196,7 +196,7 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
             Neuron<T> Bias = mNeuralNetwork.GetBiasLayer().get(layerInd);
             for(int linkInd = 0; linkInd < Bias.GetNumOfLinks(); linkInd++){
                 NeuralLink<T> currentNeuralLink = Bias.get(linkInd);
-                float pseudoRandWeight = -0.5f + ThreadLocalRandom.current().nextFloat();;
+                float pseudoRandWeight = -0.5f + ThreadLocalRandom.current().nextFloat();
                 //float pseudoRandWeight = 0;
                 currentNeuralLink.SetWeight(pseudoRandWeight);
 
