@@ -8,7 +8,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public interface TrainAlgorithm<T> {  //TODO: Is it OK, if it's interface?
     double Train(ArrayList<T> inData, ArrayList<T> inTarget); // +down to_do
-    void WeightsInitialization();  // TODO: "=0" in C++ - why near void?6 (if it's interface, this is no matter)
+    void WeightsInitialization();  // TODO: "=0" in C++ - why near void?? (if it's interface, this is no matter)
 }
 
 

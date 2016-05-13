@@ -1,27 +1,26 @@
 package com.andnovator.neural.network;
 
-import com.andnovator.neural.indexing.NeuralIndex;
-import javafx.util.Pair;
+import com.andnovator.neural.indexing.*;
 
-import java.util.*;
 //import java.util.concurrent.atomic.DoubleAccumulator;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
-public class Main {
+public class NeuralNetworkTest {
 
     public static void main(String[] args) {
 //        testDel();
 //        System.out.printf("%07d", Integer.toBinaryString(1024));
         System.out.println("'str' to binary: " + NeuralIndex.strToBinaryStr("str"));
-        Map<String, Pair<Integer, Integer>> map = new HashMap<>();
-        map.put("One", new Pair<>(1, 1));
-        map.put("Two", new Pair<>(2, 2));
-        map.put("Three", new Pair<>(3, 3));
-        map.put("Four", new Pair<>(4, 4));
-        map.put("Five", new Pair<>(5, 5));
-        System.out.println(NeuralIndex.maxStrLengthInLst(map));
+        Map<String, PosFreqPair> map = new HashMap<>();
+        map.put("One", new PosFreqPair(1, 1));
+        map.put("Two", new PosFreqPair(2, 2));
+        map.put("Three", new PosFreqPair(3, 3));
+        map.put("Four", new PosFreqPair(4, 4));
+        map.put("Five", new PosFreqPair(5, 5));
+        System.out.println(NeuralIndex.maxMapStrLengthInLst(map));
         /*ArrayList<ArrayList<Double> > DataToFeedNN = new ArrayList<>();
         ArrayList<Double> Data1 = new ArrayList<>();
         Data1.add(1.0);
@@ -75,7 +74,7 @@ public class Main {
         //trainingSample.add(ts5);
 
         NeuralNetwork<Double> NN = new NeuralNetwork<>(2,1,5,4);
-        NN.SetMinMSE(0.0001);
+        NN.setMinMSE(0.0001);
         NN.Train(DataToFeedNN,trainingSample);
 
 
@@ -138,7 +137,7 @@ public class Main {
         trainingSample.add(ts3);
         trainingSample.add(ts4);
         NeuralNetwork<Double> NN = new NeuralNetwork<>(3,1,4,6);
-        NN.SetMinMSE(0.000001);
+        NN.setMinMSE(0.000001);
         NN.Train(DataToFeedNN,trainingSample);
 
 
@@ -156,39 +155,9 @@ public class Main {
         NN.GetNetResponse(testData, true);
     }
 
-    // Number of bits to represent numbers in binary format for input (or output) to neural network
-    static final int DEFAULT_BITS = 5;
-
-    // The string "00000...0" (of length DEFAULT_BITS) used for padding
-    static final String PAD_STR = new String(new char[DEFAULT_BITS]).replace('\0', '0');  // http://stackoverflow.com/a/2807731
-
-    /**
-     * Converts the number (e.g. 6) to a binary array (e.g. [0, 0, 1, 1, 0]), encoding bits as +/- 1
-     * @param number the number (6)
-     * @param desiredLength the (minimal) length of array (5 for [0, 0, 1, 1, 0])
-     * @return the array [+, +, -, -, +]
-     */
-    static ArrayList<Double> numberToBits(int number, int desiredLength) {
-        // FIXME: actually desiredLength = DEFAULT_BITS always
-        String binary = padLeft(Integer.toBinaryString(number));
-        char[] bytes = binary.toCharArray();
-        // TODO: make this ----^ normal?
-
-        ArrayList<Double> res = new ArrayList<>(bytes.length);
-        for (char b : bytes) {
-            res.add(b == '0' ? -1.0 : 1.0);
-        }
-        return res;
-    }
-
-    // pad to PAD_STR chars
-    static String padLeft(String str) {
-        return PAD_STR.substring(str.length()) + str;
-    }
-
     static void testDel() {
 
-        int inputNeuronNum = DEFAULT_BITS;
+        int inputNeuronNum = NeuralIndex.DEFAULT_BITS;
 
         List<Integer> numbers = IntStream.rangeClosed(0, 26).boxed().collect(Collectors.toList());
         Collections.shuffle(numbers);
@@ -203,12 +172,12 @@ public class Main {
             ArrayList<Double> outputs = new ArrayList<>(1);
             outputs.add(correctAnswer);
 
-            trInputDatas.add(numberToBits(number, DEFAULT_BITS));
+            trInputDatas.add(NeuralIndex.numberToBits(number, NeuralIndex.DEFAULT_BITS));
             trOutputDatas.add(outputs);
         }
 
         NeuralNetwork<Double> NN = new NeuralNetwork<>(inputNeuronNum,1,4,inputNeuronNum*2);
-        NN.SetMinMSE(0.0001);
+        NN.setMinMSE(0.0001);
         NN.Train(trInputDatas,trOutputDatas);
 
         System.out.println("Trained!");
@@ -222,12 +191,12 @@ public class Main {
         System.out.println("-- new values: 30 (true) and 31 (false) --");
 
         int newValue = 30; // a new value, that were not in the training set
-        ArrayList<Double> newInput = numberToBits(newValue, DEFAULT_BITS);
+        ArrayList<Double> newInput = NeuralIndex.numberToBits(newValue, NeuralIndex.DEFAULT_BITS);
         System.out.println("Input data: " + Arrays.toString(newInput.toArray()));
         NN.GetNetResponse(newInput, true);
 
         newValue = 31; // a new value, that were not in the training set
-        newInput = numberToBits(newValue, DEFAULT_BITS);
+        newInput = NeuralIndex.numberToBits(newValue, NeuralIndex.DEFAULT_BITS);
         System.out.println("Input data: " + Arrays.toString(newInput.toArray()));
         NN.GetNetResponse(newInput, true);
 

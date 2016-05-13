@@ -145,10 +145,9 @@ public class NeuralNetwork<T> {
      */
 
     public boolean Train(ArrayList<ArrayList<T>> inData, ArrayList<ArrayList<T>> inTarget) {
-        boolean trues = true;
         int iIteration = 0;
-        while (trues) {
-            iIteration++;
+        while (true) {
+            ++iIteration;
             for (int i = 0; i < inData.size(); i++) {
                 mTrainingAlgoritm.Train(inData.get(i), inTarget.get(i));
             }
@@ -158,15 +157,18 @@ public class NeuralNetwork<T> {
             if (iIteration % 1000 == 0) {
                 System.out.println("At " + iIteration + " iteration MSE: " + MSE + " > minMSE (" + mMinMSE + "), continue...");
             }
-
+            this.ResetMSE();
             if (MSE < mMinMSE) {
                 System.out.println("At " + iIteration + " iteration MSE: " + MSE + " was achieved. SUCCESS");
-                trues = false;
+                return true;
             }
-            this.ResetMSE();
+            if (iIteration+1>maxTrainItNum) {
+                System.out.println("At " + (iIteration) + " iteration MSE was: " + MSE + " > minMSE (" + mMinMSE + "); but it's max iteration");
+                System.out.println("Training was stopped.");
+                System.out.println("Error - training is failure!");
+                return false;
+            }
         }
-        //return mTrainingAlgoritm.Train( inData,inTarget);
-        return trues;
     }
 
     /**
@@ -276,18 +278,18 @@ public class NeuralNetwork<T> {
     }
 
     /**
-     * Public method GetMinMSE.
+     * Public method getMinMSE.
      * - Description:    Returns the biggest MSE required to achieve during the training phase.
      * - Purpose:      Can be used for getting the biggest MSE required to achieve during the training phase.
      * - Prerequisites:  None.
      */
 
-    double GetMinMSE() {
+    public double getMinMSE() {
         return mMinMSE;
     }
 
     /**
-     * Public method SetMinMSE.
+     * Public method setMinMSE.
      * - Description:    Setter for the biggest MSE required to achieve during the training phase.
      * - Purpose:      Can be used for setting the biggest MSE required to achieve during the training phase.
      * - Prerequisites:
@@ -295,7 +297,7 @@ public class NeuralNetwork<T> {
      * @param inMinMse - double value, the biggest MSE required to achieve during the training phase.
      */
 
-    void SetMinMSE(double inMinMse) {
+    public void setMinMSE(double inMinMse) {
         mMinMSE = inMinMse;
     }
 
@@ -319,7 +321,7 @@ public class NeuralNetwork<T> {
      * - Prerequisites:  None.
      */
 
-    protected int size() {
+    public int size() {
         return mLayers.size();
     }
 
@@ -331,7 +333,8 @@ public class NeuralNetwork<T> {
      */
 
     protected ArrayList<Neuron<T>> GetOutputLayer() {
-        return mLayers.get(mLayers.size() - 1);
+        return mLayers.getLast();
+//        return mLayers.get(mLayers.size()-1);
     }
 
     /**
@@ -342,7 +345,8 @@ public class NeuralNetwork<T> {
      */
 
     protected ArrayList<Neuron<T>> GetInputLayer() {
-        return mLayers.get(0);
+        return mLayers.getFirst();
+//        return mLayers.get(0);
     }
 
     /**
@@ -438,8 +442,15 @@ public class NeuralNetwork<T> {
         }
         return 0;
     }
+    public int getMaxTrainItNum() { return maxTrainItNum; }
+    public void setMaxTrainItNum(int maxTrainIterationsNum) {
+        if (maxTrainIterationsNum>100) {
+            maxTrainItNum = maxTrainIterationsNum;
+        }
+    }
 
     int mInputs, mOutputs, mHidden;      /*!< Number of inputs, outputs and hidden units */
     double mMeanSquaredError;        /*!< Mean Squared Error which is changing every iteration of the training*/
     double mMinMSE;          /*!< The biggest Mean Squared Error required for training to stop*/
+    int maxTrainItNum = 60000;
 }
