@@ -202,7 +202,7 @@ public class NeuralNetwork<T> {
             }
 
 
-            System.out.println("Net response is: {");
+            if (printResults) { System.out.println("Net response is: {"); }
             for (int indexOfOutputElements = 0; indexOfOutputElements < mOutputs; indexOfOutputElements++) {
 
 			/*
@@ -212,11 +212,11 @@ public class NeuralNetwork<T> {
                 double res = this.GetOutputLayer().get(indexOfOutputElements).Fire();
                 netResponse.add(res);
 
-                System.out.println("res: " + res);
+                if (printResults) { System.out.println("res: " + res); }
 
 
             }
-            System.out.println(" }");
+            if (printResults) { System.out.println(" }"); }
 
             this.ResetCharges();
             return netResponse;
@@ -431,17 +431,8 @@ public class NeuralNetwork<T> {
 
     public int getInputsNum() { return mInputs; }
     public int getOutputsNum() { return mOutputs; }
-    public int getHiddenLayersNum() { return mHidden; }
-    public int getHiddenLayersSize() {
-        if (mLayers != null) {
-            if (!(mLayers.isEmpty())) {
-                if (mLayers.getFirst().size() > 2) {
-                    return mLayers.get(1).size();
-                }
-            }
-        }
-        return 0;
-    }
+    public int getHiddenLayersNum() { return Math.max(0,mLayers.size()-2); }
+    public int getHiddenLayersSize() { return mHidden; }
     public int getMaxTrainItNum() { return maxTrainItNum; }
     public void setMaxTrainItNum(int maxTrainIterationsNum) {
         if (maxTrainIterationsNum>100) {

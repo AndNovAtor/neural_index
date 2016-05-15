@@ -1,31 +1,24 @@
 package com.andnovator.neural.indexing;
 
+import com.andnovator.neural.network.NeuralNetwork;
+import javafx.util.Pair;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by novator on 10.05.2016.
  */
 public class OneFileIndexTest {
     public static void main(String[] args) {
-        ArrayList<String> oneFileWords = new ArrayList<>();
-        ArrayList<String> allFilesWords;
-        ArrayList<String> allWords = new ArrayList<>();
-        //File:
-        oneFileWords.add("nebulous");
-        oneFileWords.add("scare");
-        oneFileWords.add("rhythm");
-        oneFileWords.add("brief");
-        oneFileWords.add("flash");
-        oneFileWords.add("evanescent");
-        oneFileWords.add("hum");
-        oneFileWords.add("sloppy");
-        oneFileWords.add("alcoholic");
-        oneFileWords.add("jumbled");
-        //end file
-        // All files words:
-        allFilesWords = new ArrayList<>(oneFileWords);
+        OneFileIndexTest test1 = new OneFileIndexTest();
+        test1.returnNetwWithRespTest();
+    }
+
+    public Pair<NeuralNetwork<Double>, ArrayList<Number>> returnNetwWithRespTest() {
         //All words:
+        ArrayList<String> allWords = new ArrayList<>();
         allWords.add("nebulous");
         allWords.add("scare");
         allWords.add("rhythm");
@@ -47,6 +40,11 @@ public class OneFileIndexTest {
         allWords.add("hat");
         allWords.add("food");
         //end all words
+        //File:
+        List<String> oneFileWords = allWords.subList(0,10);
+        ArrayList<String> allFilesWords;
+        // All files words:
+        allFilesWords = new ArrayList<>(oneFileWords);
         // File words hashmap
         HashMap<String, PosFreqPair> fileWordsMap = new HashMap<>(oneFileWords.size());
         for (int i = 0; i < oneFileWords.size(); ++i) {
@@ -54,7 +52,12 @@ public class OneFileIndexTest {
         }
         NeuralIndex fileNIndex = new NeuralIndex();
         fileNIndex.trainIndex(fileWordsMap, allWords);
-        int[] resArr = fileNIndex.wordSearch(oneFileWords.get(1));
-        int a = resArr[0];
+        int[] resArr;
+        for (String word : allWords) {
+            System.out.println("For word: " + word);
+            resArr = fileNIndex.wordSearch(word, true);
+            System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
+        }
+        return new Pair<>(fileNIndex.getNeuroIndexNetwork(), fileNIndex.wordSearchNetResponce(allWords.get(18)));
     }
 }

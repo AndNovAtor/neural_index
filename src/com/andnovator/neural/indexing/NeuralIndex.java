@@ -31,6 +31,10 @@ public class NeuralIndex {
         setMaxWordLength(maxWordLength);
         neuroIndexNetwork = new NeuralNetwork<>(inputsNum,outputBitsNum,3,inputsNum+8);
     }
+    private void createNINetwork(int maxWordLength, double minMSE) {
+        createNINetwork(maxWordLength);
+        setNetworkMinMSE(minMSE);
+    }
     private void updateNetworkParams(int posBitsNum, int freqBitsNum) {
         wordMaxLength = neuroIndexNetwork.getInputsNum();
         inputsNum = wordMaxLength * bitsForChar;
@@ -157,8 +161,9 @@ public class NeuralIndex {
                 resArr.add(-1.);
             }
         }
+        int checkBitInt = (1 << numberBitsNum-1);
         for (int i=numberBitsNum; i>0; --i) {
-            resArr.add((number & 128) == 0 ? -1. : 1.);
+            resArr.add((number & checkBitInt) == 0 ? -1. : 1.);
             number <<= 1;
         }
         return resArr;
@@ -185,8 +190,7 @@ public class NeuralIndex {
     }
 
     public static int maxMapStrLengthInLst(Map<String,PosFreqPair> stringPairMap) {
-        String maxStr = Collections.max(stringPairMap.keySet(), (s1, s2) -> Math.max(s1.length(), s2.length()));
-        return maxStr.length();
+        return Collections.max(stringPairMap.keySet(), Comparator.comparingInt(String::length)).length();
     }
     public static int maxStrLengthInLst(List<String> strings) {
         return Collections.max(strings, Comparator.comparingInt(String::length)).length();
@@ -246,9 +250,8 @@ public class NeuralIndex {
     }
 
     public boolean trainIndex(Map<String,PosFreqPair> itemWordsMap, List<String> allWordsList, int maxLangWordLength) {
-//        createNINetwork(maxMapStrLengthInLst(itemWordsMap));
-        createNINetwork(maxLangWordLength);
-        setNetworkMinMSE(1e-4);
+//        createNINetwork(maxMapStrLengthInLst(itemWordsMap), 1e-4);
+        createNINetwork(maxLangWordLength, 0.005);
         ArrayList<ArrayList<Double>> wordsToFeed = new ArrayList<>();
         ArrayList<ArrayList<Double>> trainingSample = new ArrayList<>();
         for (String word : itemWordsMap.keySet()) {
@@ -257,14 +260,13 @@ public class NeuralIndex {
         }
         int allWordsNum = allWordsList.size();
         // FIXME: there should be correct constant, it is taken by words num
-        final int someConstantOtherWordFeedNum = 8;
+        final int someConstantOtherWordFeedNum = 6;
         if (itemWordsMap.size() >= allWordsList.size()) {
             for (String otherWord : generateRandWordList(someConstantOtherWordFeedNum)) {
                 wordsToFeed.add(strToDoubleBits(otherWord));
                 trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
             }
         } else {
-            // TODO: If list below is list of all words in language, maybe, no need for shuffle?
             Collections.shuffle(allWordsList);
             int wordsAdded = 0;
             for (String otherWord : allWordsList) {
@@ -278,18 +280,13 @@ public class NeuralIndex {
         }
         return neuroIndexNetwork.Train(wordsToFeed, trainingSample);
     }
-
     public int[] wordSearch(String word){
-
-        /*Arrays.stream( "str".getBytes(StandardCharsets.US_ASCII) )
-                .map ( ch -> ch - 'a' )
-                .flatMap ( ch -> numberToBits(ch).stream() )
-                .collect(Collectors.toList())*/
-
-        ArrayList<Double> searchWordBytes = strToDoubleBits(word);
+        return wordSearch(word, false);
+    }
+    public int[] wordSearch(String word, boolean isResPrint){
         int[] resArr = {-1, -1};
-        if (neuroIndexNetwork != null) {
-            ArrayList<Number> resArrLst =  neuroIndexNetwork.GetNetResponse(searchWordBytes);
+        ArrayList<Number> resArrLst = wordSearchNetResponce(word, isResPrint);
+        if (resArrLst != null) {
             // FIXME: there must not be just ".round"!
             if (Math.round((double)(resArrLst.get(0))) == 1) {
                 resArr[0] = bitsArraylstToInt(resArrLst.subList(1, outputPosBitsNum+1));
@@ -297,5 +294,20 @@ public class NeuralIndex {
             }
         }
         return resArr;
+    }
+    ArrayList<Number> wordSearchNetResponce(String word) {
+        return wordSearchNetResponce(word, false);
+    }
+    ArrayList<Number> wordSearchNetResponce(String word, boolean isResPrint) {
+        /*Arrays.stream( "str".getBytes(StandardCharsets.US_ASCII) )
+                .map ( ch -> ch - 'a' )
+                .flatMap ( ch -> numberToBits(ch).stream() )
+                .collect(Collectors.toList())*/
+        ArrayList<Double> searchWordBytes = strToDoubleBits(word);
+        if (neuroIndexNetwork != null) {
+            return neuroIndexNetwork.GetNetResponse(searchWordBytes, isResPrint);
+        } else {
+            return null;
+        }
     }
 }

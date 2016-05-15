@@ -1,6 +1,7 @@
 package com.andnovator.neural.network;
 
 import com.andnovator.neural.indexing.*;
+import javafx.util.Pair;
 
 //import java.util.concurrent.atomic.DoubleAccumulator;
 import java.util.*;
@@ -21,7 +22,11 @@ public class NeuralNetworkTest {
         map.put("Four", new PosFreqPair(4, 4));
         map.put("Five", new PosFreqPair(5, 5));
         System.out.println(NeuralIndex.maxMapStrLengthInLst(map));
-        /*ArrayList<ArrayList<Double> > DataToFeedNN = new ArrayList<>();
+        //returnNetwTest();
+    }
+
+    public Pair<NeuralNetwork<Double>, ArrayList<Number>> returnNetwWithRespTest() {
+        ArrayList<ArrayList<Double> > DataToFeedNN = new ArrayList<>();
         ArrayList<Double> Data1 = new ArrayList<>();
         Data1.add(1.0);
         Data1.add(1.0);
@@ -77,31 +82,29 @@ public class NeuralNetworkTest {
         NN.setMinMSE(0.0001);
         NN.Train(DataToFeedNN,trainingSample);
 
-
-        System.out.println();
-        System.out.println("Input data: { 1, 1 }");
-        NN.GetNetResponse(DataToFeedNN.get(0), true);
-
-        System.out.println();
-        System.out.println("Input data: { 1, 0 }");
-        NN.GetNetResponse(DataToFeedNN.get(1), true);
-
-        System.out.println();
-        System.out.println("Input data: { 0, 1 }");
-        NN.GetNetResponse(DataToFeedNN.get(2), true);
-
-        System.out.println();
-        System.out.println("Input data: { 0, 0 }");
-        //NN.GetNetResponse(DataToFeedNN.get(3), true);
-        NN.GetNetResponse(Data4);
-
-
-        System.out.println();
-        System.out.println("Input data: { test }");
-        NN.GetNetResponse(Data5, true);*/
+//        System.out.println();
+//        System.out.println("Input data: { 1, 1 }");
+//        NN.GetNetResponse(DataToFeedNN.get(0), true);
+//
+//        System.out.println();
+//        System.out.println("Input data: { 1, 0 }");
+//        NN.GetNetResponse(DataToFeedNN.get(1), true);
+//
+//        System.out.println();
+//        System.out.println("Input data: { 0, 1 }");
+//        NN.GetNetResponse(DataToFeedNN.get(2), true);
+//
+//        System.out.println();
+//        System.out.println("Input data: { 0, 0 }");
+//        //NN.GetNetResponse(DataToFeedNN.get(3), true);
+//        NN.GetNetResponse(Data4);
+//
+//        System.out.println();
+//        System.out.println("Input data: { test }");
+        return new Pair<>(NN, NN.GetNetResponse(Data5, true));
     }
 
-    static void testForFInd() {
+    public ArrayList<Number> testForFInd() {
         ArrayList<ArrayList<Double> > DataToFeedNN = new ArrayList<>();
         ArrayList<Double> Data1 = new ArrayList<>();
         Data1.add(-1.);
@@ -152,7 +155,7 @@ public class NeuralNetworkTest {
         testData.add(-1.);
         testData.add(-1.);
         testData.add(1.);
-        NN.GetNetResponse(testData, true);
+        return NN.GetNetResponse(testData);
     }
 
     static void testDel() {
