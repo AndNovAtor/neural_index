@@ -1,5 +1,6 @@
 package com.andnovator.neural.network;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -45,7 +46,7 @@ public class Neuron<T> {
      * 		- Prerequisites:	The existence of std::vector<Neuron> and NetworkFunction.
      */
 
-    Neuron(ArrayList<Neuron<T>> inNeuronsLinkTo, NetworkFunction inNetFunc )
+    Neuron(List<Neuron<T>> inNeuronsLinkTo, NetworkFunction inNetFunc )
     {
 	/*
 	 * 		Net Function is an activation function for neuron
@@ -92,7 +93,7 @@ public class Neuron<T> {
 
     }
 
-    ArrayList<NeuralLink<T>>	GetLinksToNeurons( ) { return mLinksToNeurons; }
+    List<NeuralLink<T>>	GetLinksToNeurons( ) { return mLinksToNeurons; }
     NeuralLink<T> get( int inIndexOfNeuralLink ) { return mLinksToNeurons.get(inIndexOfNeuralLink); }
 
     void SetLinkToNeuron( NeuralLink<T> inNeuralLink ) { mLinksToNeurons.add( inNeuralLink ); }
@@ -146,7 +147,7 @@ public class Neuron<T> {
     }
     protected NetworkFunction mNetFunc;
     protected LinkedList<NeuralLink<T>> mInputLinks = new LinkedList<>();
-    protected ArrayList<NeuralLink<T>> mLinksToNeurons = new ArrayList<>();
+    protected List<NeuralLink<T>> mLinksToNeurons = new ArrayList<>();
 
     protected double mSumOfCharges;
 }
@@ -154,7 +155,7 @@ public class Neuron<T> {
 class OutputLayerNeuronDecorator<T> extends Neuron<T> {
     public OutputLayerNeuronDecorator(Neuron<T> inNeuron) { mOutputCharge = 0; mNeuron = inNeuron; }
 
-    public ArrayList<NeuralLink<T>>	GetLinksToNeurons( ) { return mNeuron.GetLinksToNeurons( );}
+    public List<NeuralLink<T>>	GetLinksToNeurons( ) { return mNeuron.GetLinksToNeurons( );}
     public NeuralLink<T>			get( int inIndexOfNeuralLink ) { return ( mNeuron.get( inIndexOfNeuralLink ) );}
     public void SetLinkToNeuron( NeuralLink<T> inNeuralLink )			{ mNeuron.SetLinkToNeuron( inNeuralLink );}
     public double GetSumOfCharges( ) { return mNeuron.GetSumOfCharges( ); }
@@ -233,7 +234,7 @@ class HiddenLayerNeuronDecorator<T> extends Neuron<T>
 {
     HiddenLayerNeuronDecorator( Neuron<T> inNeuron )		{ mNeuron = inNeuron; }
 
-    ArrayList<NeuralLink<T>>	GetLinksToNeurons( ) { return mNeuron.GetLinksToNeurons( ); }
+    List<NeuralLink<T>>	GetLinksToNeurons( ) { return mNeuron.GetLinksToNeurons( ); }
     void SetLinkToNeuron( NeuralLink<T> inNeuralLink )			{ mNeuron.SetLinkToNeuron( inNeuralLink ); }
     double GetSumOfCharges( ) { return mNeuron.GetSumOfCharges( ) ;}
 

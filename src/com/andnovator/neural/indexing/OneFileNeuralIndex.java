@@ -9,7 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Created by novator on 03.05.2016.
  */
-public class NeuralIndex {
+public class OneFileNeuralIndex {
     private NeuralNetwork<Double> neuroIndexNetwork;
     private int wordMaxLength = 15;
     static private final int bitsForChar = 8;
@@ -17,31 +17,35 @@ public class NeuralIndex {
     private int outputPosBitsNum = 16;
     private int outputFreqBitsNum = 16;
     private int outputBitsNum = outputPosBitsNum + outputFreqBitsNum + 1;
-    private double networkMinMSE = 1e-4;
+    private double networkMinMSE = defaultNetworkMinMSE;
+
+    static private double defaultNetworkMinMSE = 5e-3;
 
 
-    public NeuralIndex() {
+    public OneFileNeuralIndex() {
         neuroIndexNetwork = null;
     }
-    public NeuralIndex(NeuralNetwork<Double> neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
+    public OneFileNeuralIndex(NeuralNetwork<Double> neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
         this.neuroIndexNetwork = neuroIndexNetwork;
         updateNetworkParams(posBitsNum, freqBitsNum);
     }
+
+
     private void createNINetwork(int maxWordLength) {
         setMaxWordLength(maxWordLength);
         neuroIndexNetwork = new NeuralNetwork<>(inputsNum,outputBitsNum,3,inputsNum+8);
+        neuroIndexNetwork.setMinMSE(defaultNetworkMinMSE);
     }
     private void createNINetwork(int maxWordLength, double minMSE) {
         createNINetwork(maxWordLength);
         setNetworkMinMSE(minMSE);
     }
     private void updateNetworkParams(int posBitsNum, int freqBitsNum) {
-        wordMaxLength = neuroIndexNetwork.getInputsNum();
-        inputsNum = wordMaxLength * bitsForChar;
+        inputsNum = neuroIndexNetwork.getInputsNum();
+        wordMaxLength = inputsNum / bitsForChar;
         outputPosBitsNum = posBitsNum;
         outputFreqBitsNum = freqBitsNum;
         outputBitsNum = outputPosBitsNum + outputFreqBitsNum + 1;
-        networkMinMSE = neuroIndexNetwork.getMinMSE();
     }
     private void setMaxWordLength(int length) {
         wordMaxLength = length;
@@ -49,20 +53,25 @@ public class NeuralIndex {
     }
 
     public NeuralNetwork<Double> getNeuroIndexNetwork() { return neuroIndexNetwork; }
-    // TODO: In methods below the correct network only is needed; so, should think about access
-    public void setNeuroIndexNetwork(NeuralNetwork<Double> neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
+    void setNeuroIndexNetwork(NeuralNetwork<Double> neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
         this.neuroIndexNetwork = neuroIndexNetwork;
         updateNetworkParams(posBitsNum, freqBitsNum);
     }
     public int getWordMaxLength() { return wordMaxLength; }
     public int getOutpuBitsNum() { return outputBitsNum; }
-    public double getNetworkMinMSE() { return networkMinMSE; }
+    public double getNetworkMinMSE() {
+        if (neuroIndexNetwork!=null) {
+            return neuroIndexNetwork.getMinMSE();
+        } else {
+            return networkMinMSE;
+        }
+    }
     public void setNetworkMinMSE(double minMSE) {
-        if (neuroIndexNetwork != null) {
-            if ((minMSE > 0) && (minMSE < 0.5)) {
+        if ((minMSE > 0) && (minMSE < 0.5)) {
+            if (neuroIndexNetwork != null) {
                 neuroIndexNetwork.setMinMSE(minMSE);
-                networkMinMSE = minMSE;
             }
+            networkMinMSE = minMSE;
         }
     }
 
@@ -80,12 +89,12 @@ public class NeuralIndex {
         return binarySB.toString();
     }
 
-    static ArrayList<Double> strToDoubleBitArrList(String str, int bitsNum) {
+    static List<Double> strToDoubleBitArrList(String str, int bitsNum) {
         if (bitsNum < 8*str.length()) {
             System.out.println("Bits num change to str size ("+8*str.length()+")");
         }
         byte[] barr = str.getBytes(StandardCharsets.US_ASCII);
-        ArrayList<Double> resArr = new ArrayList<>();
+        List<Double> resArr = new ArrayList<>();
         if (bitsNum > 8*str.length()) {
             for (int i=8*str.length(); i<bitsNum; ++i) {
                 resArr.add(-1.);
@@ -100,11 +109,11 @@ public class NeuralIndex {
         }
         return resArr;
     }
-    protected ArrayList<Double> strToDoubleBits(String str) {
+    protected List<Double> strToDoubleBits(String str) {
         return strToDoubleBitArrList(str, inputsNum);
     }
 
-    static int bitsArraylstToInt(List<Number> bitsArrLst) throws IllegalArgumentException {
+    static int bitsListToInt(List<Number> bitsArrLst) throws IllegalArgumentException {
         int res = 0;
         for (int i = 0; i < bitsArrLst.size(); i++) {
             double dBit = Math.round((double)bitsArrLst.get(i));
@@ -112,7 +121,7 @@ public class NeuralIndex {
             if (dBit == 1) {
                 res += 1;
             } else if (dBit != -1) {
-                throw new IllegalArgumentException("Net responce on "+i+" place != 1 by abs");
+                throw new IllegalArgumentException("Net responce on "+i+" place != 1 by abs - get:" + bitsArrLst.get(i));
             }
         }
         return res;
@@ -136,26 +145,26 @@ public class NeuralIndex {
      * @return the array [+, +, -, -, +]
      */
     @Deprecated
-    public  static ArrayList<Double> numberToBits(int number, int desiredLength) {
+    public  static List<Double> numberToBits(int number, int desiredLength) {
         // FIXME_: actually desiredLength = DEFAULT_BITS always
         String binary = padLeft(Integer.toBinaryString(number));
         char[] bytes = binary.toCharArray();
         // TODO_: make this ----^ normal?
 
-        ArrayList<Double> res = new ArrayList<>(bytes.length);
+        List<Double> res = new ArrayList<>(bytes.length);
         for (char b : bytes) {
             res.add(b == '0' ? -1.0 : 1.0);
         }
         return res;
     }
-    public static ArrayList<Double> intToDoubleBits(int number, int bitsNum) {
+    public static List<Double> intToDoubleBits(int number, int bitsNum) {
         int numberBitsNum = Integer.SIZE - Integer.numberOfLeadingZeros(number);
         if (bitsNum < numberBitsNum) {
             System.err.println("Input integer bits num is greater than input bits num.");
             System.err.println("Convert int->'double bits' is failure. Return value is 'null'");
             return null;
         }
-        ArrayList<Double> resArr = new ArrayList<>();
+        List<Double> resArr = new ArrayList<>();
         if (bitsNum > numberBitsNum) {
             for (int i=numberBitsNum; i<bitsNum; ++i) {
                 resArr.add(-1.);
@@ -169,15 +178,15 @@ public class NeuralIndex {
         return resArr;
     }
 
-    static ArrayList<Double> posFreqToDoubleBitsArrLst(PosFreqPair pair, int posBitsNum, int freqBitsNum) {
-        ArrayList<Double> resArr = new ArrayList<>();
+    static List<Double> posFreqToDoubleBitsArrLst(PosFreqPair pair, int posBitsNum, int freqBitsNum) {
+        List<Double> resArr = new ArrayList<>();
         if (pair.getFreq() == 0) {
             resArr.add(-1.);
         } else {
             resArr.add(1.);
         }
-        ArrayList<Double> posArr = intToDoubleBits(pair.getPos(), posBitsNum);
-        ArrayList<Double> freqArr = intToDoubleBits(pair.getFreq(), freqBitsNum);
+        List<Double> posArr = intToDoubleBits(pair.getPos(), posBitsNum);
+        List<Double> freqArr = intToDoubleBits(pair.getFreq(), freqBitsNum);
         if ((posArr == null) || (freqArr == null)) {
             return null;
         }
@@ -185,7 +194,7 @@ public class NeuralIndex {
         resArr.addAll(freqArr);
         return resArr;
     }
-    public ArrayList<Double> posFreqToDoubleBits(PosFreqPair pair) {
+    public List<Double> posFreqToDoubleBits(PosFreqPair pair) {
         return posFreqToDoubleBitsArrLst(pair, outputPosBitsNum, outputFreqBitsNum);
     }
 
@@ -197,19 +206,19 @@ public class NeuralIndex {
     }
 
     /**
-     * Return Map keys as ArrayList of keys class
-     * using: NeuralIndex.&lt;K, V&gt;hashMapKeysToList(...)
-     * example: NeuralIndex.&lt;String, Integer&gt;hashMapKeysToList(map)
+     * Return Map keys as List of keys class
+     * using: OneFileNeuralIndex.&lt;K, V&gt;hashMapKeysToList(...)
+     * example: OneFileNeuralIndex.&lt;String, Integer&gt;hashMapKeysToList(map)
      * @param <K> Map keys class
      * @param <V> Map values class
-     * @return Map keys as ArrayList
+     * @return Map keys as List
      */
     public static <K, V> List<K> hashMapKeysToList(Map<K, V> map) {
         return new ArrayList<>(map.keySet());
     }
 
-    public static ArrayList<String> generateRandStrList(int strNumbers) {
-        ArrayList<String> randomStrings = new ArrayList<>(strNumbers);
+    public static List<String> generateRandStrList(int strNumbers) {
+        List<String> randomStrings = new ArrayList<>(strNumbers);
         for(int i = 0; i < strNumbers; ++i) {
             char[] word = new char[ThreadLocalRandom.current().nextInt(4)+1];
             for(int j = 0; j < word.length; j++) {
@@ -219,8 +228,8 @@ public class NeuralIndex {
         }
         return randomStrings;
     }
-    public static ArrayList<String> generateRandWordList(int wordNumbers) {
-        ArrayList<String> randomWords = new ArrayList<>(wordNumbers);
+    public static List<String> generateRandWordList(int wordNumbers) {
+        List<String> randomWords = new ArrayList<>(wordNumbers);
         int wordsAdded = 0;
         // 'z', 'c', 't' - some random chars, needed for random not-word string generating
         char[] strChars = {'a', 'a', 'a', 'z', 'c', 't'};
@@ -251,9 +260,9 @@ public class NeuralIndex {
 
     public boolean trainIndex(Map<String,PosFreqPair> itemWordsMap, List<String> allWordsList, int maxLangWordLength) {
 //        createNINetwork(maxMapStrLengthInLst(itemWordsMap), 1e-4);
-        createNINetwork(maxLangWordLength, 0.005);
-        ArrayList<ArrayList<Double>> wordsToFeed = new ArrayList<>();
-        ArrayList<ArrayList<Double>> trainingSample = new ArrayList<>();
+        createNINetwork(maxLangWordLength, networkMinMSE);
+        List<List<Double>> wordsToFeed = new ArrayList<>();
+        List<List<Double>> trainingSample = new ArrayList<>();
         for (String word : itemWordsMap.keySet()) {
             wordsToFeed.add(strToDoubleBits(word));
             trainingSample.add(posFreqToDoubleBits(itemWordsMap.get(word)));
@@ -285,25 +294,25 @@ public class NeuralIndex {
     }
     public int[] wordSearch(String word, boolean isResPrint){
         int[] resArr = {-1, -1};
-        ArrayList<Number> resArrLst = wordSearchNetResponce(word, isResPrint);
+        List<Number> resArrLst = wordSearchNetResponce(word, isResPrint);
         if (resArrLst != null) {
             // FIXME: there must not be just ".round"!
             if (Math.round((double)(resArrLst.get(0))) == 1) {
-                resArr[0] = bitsArraylstToInt(resArrLst.subList(1, outputPosBitsNum+1));
-                resArr[1] = bitsArraylstToInt(resArrLst.subList(outputPosBitsNum+1, outputBitsNum));
+                resArr[0] = bitsListToInt(resArrLst.subList(1, outputPosBitsNum+1));
+                resArr[1] = bitsListToInt(resArrLst.subList(outputPosBitsNum+1, outputBitsNum));
             }
         }
         return resArr;
     }
-    ArrayList<Number> wordSearchNetResponce(String word) {
+    List<Number> wordSearchNetResponce(String word) {
         return wordSearchNetResponce(word, false);
     }
-    ArrayList<Number> wordSearchNetResponce(String word, boolean isResPrint) {
+    List<Number> wordSearchNetResponce(String word, boolean isResPrint) {
         /*Arrays.stream( "str".getBytes(StandardCharsets.US_ASCII) )
                 .map ( ch -> ch - 'a' )
                 .flatMap ( ch -> numberToBits(ch).stream() )
                 .collect(Collectors.toList())*/
-        ArrayList<Double> searchWordBytes = strToDoubleBits(word);
+        List<Double> searchWordBytes = strToDoubleBits(word);
         if (neuroIndexNetwork != null) {
             return neuroIndexNetwork.GetNetResponse(searchWordBytes, isResPrint);
         } else {

@@ -4,8 +4,11 @@ package com.andnovator.neural.network;
  * Created by novator on 01.11.2015.
  */
 
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Stream.concat;
 
 /**
  * Neural network class.
@@ -50,9 +53,10 @@ public class NeuralNetwork<T> {
         if ((inInputs > 0) && (inOutputs > 0)) {
             mMinMSE = 0.01;
             mMeanSquaredError = 0;
-            mInputs = inInputs;
-            mOutputs = inOutputs;
-            mHidden = inNumOfNeuronsInHiddenLayers;
+            inputsNum = inInputs;
+            outputsNum = inOutputs;
+            neuronsPerHidden = inNumOfNeuronsInHiddenLayers;
+            hiddenLayersNum = inNumOfHiddenLayers;
         /*
 		 *		Network function's declarations for input and output neurons.
 		*/
@@ -61,8 +65,8 @@ public class NeuralNetwork<T> {
 		/*
 		 *		At least two layers require - input and output;
 		*/
-            ArrayList<Neuron<T>> outputLayer = new ArrayList<>();
-            ArrayList<Neuron<T>> inputLayer = new ArrayList<>();
+            List<Neuron<T>> outputLayer = new ArrayList<>();
+            List<Neuron<T>> inputLayer = new ArrayList<>();
 
 		/*
 		 *		This block of strcmps decides what training algorithm and neuron factory we should use as well as what
@@ -87,7 +91,7 @@ public class NeuralNetwork<T> {
 		 * 		Hidden layers creation
 		*/
             for (int i = 0; i < inNumOfHiddenLayers; i++) {
-                ArrayList<Neuron<T>> HiddenLayer = new ArrayList<>();
+                List<Neuron<T>> HiddenLayer = new ArrayList<>();
                 for (int j = 0; j < inNumOfNeuronsInHiddenLayers; j++) {
                     Neuron<T> hidden = mNeuronFactory.CreateHiddenNeuron(mLayers.get(0), OutputNeuronsFunc);
                     HiddenLayer.add(hidden);
@@ -118,19 +122,6 @@ public class NeuralNetwork<T> {
         this(inInputs, inOutputs, inNumOfHiddenLayers, inNumOfNeuronsInHiddenLayers, "MultiLayerPerceptron");
     }
 
-    public NeuralNetwork(int inInputs,
-                         int inOutputs,
-                         int inNumOfHiddenLayers
-    ) {
-        this(inInputs, inOutputs, inNumOfHiddenLayers, 0, "MultiLayerPerceptron");
-    }
-
-    public NeuralNetwork(int inInputs,
-                         int inOutputs
-    ) {
-        this(inInputs, inOutputs, 0, 0, "MultiLayerPerceptron");
-    }
-
 
     /**
      * Public method Train.
@@ -138,26 +129,26 @@ public class NeuralNetwork<T> {
      * - Purpose:      Trains a network, so the weights on the links adjusted in the way to be able to solve problem.
      * - Prerequisites:
      *
-     * @param inData   - a ArrayList of ArrayLists with data to train with;
-     * @param inTarget - a ArrayList of ArrayLists with target data;
+     * @param inData   - a List of Lists with data to train with;
+     * @param inTarget - a List of Lists with target data;
      *                 - the number of data samples and target samples has to be equal;
      *                 - the data and targets has to be in the appropriate order u want the network to learn.
      */
 
-    public boolean Train(ArrayList<ArrayList<T>> inData, ArrayList<ArrayList<T>> inTarget) {
+    public boolean Train(List<List<T>> inData, List<List<T>> inTarget) {
         int iIteration = 0;
         while (true) {
             ++iIteration;
             for (int i = 0; i < inData.size(); i++) {
                 mTrainingAlgoritm.Train(inData.get(i), inTarget.get(i));
             }
-            double MSE = this.GetMSE();
+            double MSE = this.getMSE();
 
             // debug output
             if (iIteration % 1000 == 0) {
                 System.out.println("At " + iIteration + " iteration MSE: " + MSE + " > minMSE (" + mMinMSE + "), continue...");
             }
-            this.ResetMSE();
+            this.resetMSE();
             if (MSE < mMinMSE) {
                 System.out.println("At " + iIteration + " iteration MSE: " + MSE + " was achieved. SUCCESS");
                 return true;
@@ -177,18 +168,18 @@ public class NeuralNetwork<T> {
      * - Purpose:      By calling this method u make the network evaluate the response for u.
      * - Prerequisites:
      *
-     * @param inData - a ArrayList data to feed with.
+     * @param inData - a List data to feed with.
      */
 
-    public ArrayList<Number> GetNetResponse(ArrayList<T> inData, boolean printResults) {
-        ArrayList<Number> netResponse = new ArrayList<>();
-        if (inData.size() != mInputs) {
-            System.out.println("Input data dimensions are wrong, expected: " + mInputs + " elements");
+    public List<Number> GetNetResponse(List<T> inData, boolean printResults) {
+        List<Number> netResponse = new ArrayList<>();
+        if (inData.size() != inputsNum) {
+            System.out.println("Input data dimensions are wrong, expected: " + inputsNum + " elements");
 
             return netResponse;
         } else {
             for (int indexOfData = 0; indexOfData < this.GetInputLayer().size(); indexOfData++) {
-                this.GetInputLayer().get(indexOfData).Input((Double) inData.get(indexOfData)); // TODO: (Double) - it's "cycle"!! What to do with <T> (there's Input(double))
+                this.GetInputLayer().get(indexOfData).Input((Double) inData.get(indexOfData)); // TODO: (Double) - it's "cycle"!! What to do with <T> (there'sg Input(double))
             }
 
             for (int numOfLayers = 0; numOfLayers < mLayers.size() - 1; numOfLayers++) {
@@ -203,7 +194,7 @@ public class NeuralNetwork<T> {
 
 
             if (printResults) { System.out.println("Net response is: {"); }
-            for (int indexOfOutputElements = 0; indexOfOutputElements < mOutputs; indexOfOutputElements++) {
+            for (int indexOfOutputElements = 0; indexOfOutputElements < outputsNum; indexOfOutputElements++) {
 
 			/*
 			 * 		For every neuron in output layer, make it fire its sum of charges;
@@ -224,7 +215,7 @@ public class NeuralNetwork<T> {
         }
     }
 
-    public ArrayList<Number> GetNetResponse(ArrayList<T> inData) {
+    public List<Number> GetNetResponse(List<T> inData) {
         return this.GetNetResponse(inData, false);
     }
 
@@ -310,7 +301,7 @@ public class NeuralNetwork<T> {
      * @param inInd -  an integer index of layer.
      */
 
-    ArrayList<Neuron<T>> GetLayer(int inInd) {
+    List<Neuron<T>> GetLayer(int inInd) {
         return mLayers.get(inInd);
     }
 
@@ -332,9 +323,8 @@ public class NeuralNetwork<T> {
      * - Prerequisites:  None.
      */
 
-    protected ArrayList<Neuron<T>> GetOutputLayer() {
-        return mLayers.getLast();
-//        return mLayers.get(mLayers.size()-1);
+    protected List<Neuron<T>> GetOutputLayer() {
+        return mLayers.get(mLayers.size()-1);
     }
 
     /**
@@ -344,19 +334,18 @@ public class NeuralNetwork<T> {
      * - Prerequisites:  None.
      */
 
-    protected ArrayList<Neuron<T>> GetInputLayer() {
-        return mLayers.getFirst();
-//        return mLayers.get(0);
+    protected List<Neuron<T>> GetInputLayer() {
+        return mLayers.get(0);
     }
 
     /**
      * Protected method GetBiasLayer.
-     * - Description:    Returns the ArrayList of Biases.
-     * - Purpose:      Can be used by inner implementation for getting ArrayList of Biases.
+     * - Description:    Returns the List of Biases.
+     * - Purpose:      Can be used by inner implementation for getting List of Biases.
      * - Prerequisites:  None.
      */
 
-    protected ArrayList<Neuron<T>> GetBiasLayer() {
+    protected List<Neuron<T>> GetBiasLayer() {
         return mBiasLayer;
     }
 
@@ -368,7 +357,7 @@ public class NeuralNetwork<T> {
      */
 
     protected void UpdateWeights() {
-        for (ArrayList<Neuron<T>> mLayer : mLayers) {
+        for (List<Neuron<T>> mLayer : mLayers) {
             mLayer.forEach(Neuron::PerformWeightsUpdating);
         }
     }
@@ -381,7 +370,7 @@ public class NeuralNetwork<T> {
      */
 
     protected void ResetCharges() {
-        for (ArrayList<Neuron<T>> mLayer : mLayers) {
+        for (List<Neuron<T>> mLayer : mLayers) {
             mLayer.forEach(Neuron::ResetSumOfCharges);
         }
         for (int i = 0; i < mLayers.size() - 1; i++) {
@@ -390,7 +379,7 @@ public class NeuralNetwork<T> {
     }
 
     /**
-     * Protected method AddMSE.
+     * Protected method addMSE.
      * - Description:    Changes MSE during the training phase.
      * - Purpose:      Can be used by inner implementation for changing MSE during the training phase.
      * - Prerequisites:
@@ -398,50 +387,121 @@ public class NeuralNetwork<T> {
      * @param inPortion -  a double amount of MSE to be add.
      */
 
-    void AddMSE(double inPortion) {
+    void addMSE(double inPortion) {
         mMeanSquaredError += inPortion;
     }
 
     /**
-     * Protected method GetMSE.
+     * Protected method getMSE.
      * - Description:    Getter for MSE value.
      * - Purpose:      Can be used by inner implementation for getting access to the MSE value.
      * - Prerequisites:  None.
      */
 
-    double GetMSE() {
+    double getMSE() {
         return mMeanSquaredError;
     }
 
     /**
-     * Protected method ResetMSE.
+     * Protected method resetMSE.
      * - Description:    Resets MSE value.
      * - Purpose:      Can be used by inner implementation for resetting MSE value.
      * - Prerequisites:  None.
      */
 
-    void ResetMSE() {
+    void resetMSE() {
         mMeanSquaredError = 0;
     }
 
     NeuronFactory<T> mNeuronFactory;       /*!< Member, which is responsible for creating neurons @see SetNeuronFactory */
     TrainAlgorithm<T> mTrainingAlgoritm;      /*!< Member, which is responsible for the way the network will trained @see SetAlgorithm */
-    LinkedList<ArrayList<Neuron<T>>> mLayers = new LinkedList<>();   /*!< Inner representation of neural networks */
-    ArrayList<Neuron<T>> mBiasLayer = new ArrayList<>();          /*!< Container for biases */
+    List<List<Neuron<T>>> mLayers = new LinkedList<>();   /*!< Inner representation of neural networks */
+    List<Neuron<T>> mBiasLayer = new LinkedList<>();          /*!< Container for biases */
 
-    public int getInputsNum() { return mInputs; }
-    public int getOutputsNum() { return mOutputs; }
-    public int getHiddenLayersNum() { return Math.max(0,mLayers.size()-2); }
-    public int getHiddenLayersSize() { return mHidden; }
+    public int getInputsNum() { return inputsNum; }
+    public int getOutputsNum() { return outputsNum; }
+    public int getHiddenLayersNum() { return hiddenLayersNum; }
+    public int getHiddenLayersSize() { return neuronsPerHidden; }
     public int getMaxTrainItNum() { return maxTrainItNum; }
+    public int getAllNeuronsNum() {
+        return inputsNum + hiddenLayersNum * neuronsPerHidden + outputsNum;
+    }
+    private int getBiasLinkNum() { return hiddenLayersNum*neuronsPerHidden + outputsNum; }
+    private int getSimpleNeuronsLinksNum() { return (inputsNum + (hiddenLayersNum -1)*neuronsPerHidden + outputsNum)* neuronsPerHidden; }
+
     public void setMaxTrainItNum(int maxTrainIterationsNum) {
         if (maxTrainIterationsNum>100) {
             maxTrainItNum = maxTrainIterationsNum;
         }
     }
+    public List<List<Double>> exportNetworkWeights() {
 
-    int mInputs, mOutputs, mHidden;      /*!< Number of inputs, outputs and hidden units */
-    double mMeanSquaredError;        /*!< Mean Squared Error which is changing every iteration of the training*/
-    double mMinMSE;          /*!< The biggest Mean Squared Error required for training to stop*/
+        // 1. связи каждого сдвигового нейрона с остальными
+        Stream<Double> biasLinks = mBiasLayer.stream().flatMap(this::exportNeuronWeights);
+
+        // 2. связи каждого слоя
+        Stream<Double> otherNeuronsLinks = mLayers.stream()
+                .limit(mLayers.size()-1)
+                .flatMap( layer ->layer.stream().flatMap(this::exportNeuronWeights) );
+
+        return Arrays.asList(biasLinks.collect(toList()), otherNeuronsLinks.collect(toList()));
+    }
+
+    private Stream<Double> exportNeuronWeights(Neuron<T> n) {
+        return n.GetLinksToNeurons().stream()
+                .map(NeuralLink::GetWeight);
+    }
+
+    /**
+     *
+     * @param biasesWeights
+     * @param simpleNeuronWeights
+     * @throws IllegalArgumentException если размеры массивов некорректны
+     */
+    public void importNetworkWeights(List<Double> biasesWeights, List<Double> simpleNeuronWeights) throws IllegalArgumentException { // {
+        if ((simpleNeuronWeights.size() != getSimpleNeuronsLinksNum())
+                || (biasesWeights.size() != getBiasLinkNum())) {
+            throw new IllegalArgumentException("NN loading is failed - input parameters is not same as NN object which invoked this loading");
+        }
+        final double maxWeight = mTrainingAlgoritm.getMaxAbsWeight();
+        simpleNeuronWeights.stream().filter(w -> Math.abs(w) > maxWeight).findFirst().ifPresent(w -> {
+            throw new IllegalArgumentException("NN loading is failed - all inner neuron weights should be in [-1; 1] but "+w+" found");
+        });
+        setNetworkWeights(biasesWeights, simpleNeuronWeights);
+    }
+
+    void setNetworkWeights(List<Double> biasesWeights, List<Double> otherWeights) {
+        Iterator<Double> biasesIter = biasesWeights.iterator();
+        mBiasLayer.forEach(biasNeuron ->
+            biasNeuron.GetLinksToNeurons().forEach( link ->
+                link.SetWeight(biasesIter.next())
+            )
+        );
+        Iterator<Double> otherIter = otherWeights.iterator();
+        mLayers.stream()
+               .limit(mLayers.size() - 1)
+               .forEach(neuronsLayer ->
+                   neuronsLayer.forEach(neuron ->
+                       neuron.GetLinksToNeurons().forEach(link ->
+                           link.SetWeight(otherIter.next())
+                       )
+        ));
+    }
+    public static<T> NeuralNetwork<T> loadNetwork(List<Double> biasesWeights, List<Double> simpleNeuronWeights, int inputs, int outputs,
+                                                    int hiddenLayerNum, int neuronsInHiddenL) {
+        NeuralNetwork<T> neuralNetwork = new NeuralNetwork<>(inputs, outputs, hiddenLayerNum, neuronsInHiddenL);
+        neuralNetwork.importNetworkWeights(biasesWeights, simpleNeuronWeights);
+        return neuralNetwork;
+    }
+
+    /*private Stream<Double> exportNeuronLinks(Neuron<T> n, Function<NeuralLink<T>,Double> lamdFunct) {
+        return n.GetLinksToNeurons().stream()
+                .map(lamdFunct);
+    }*/
+
+
+    int inputsNum, outputsNum, hiddenLayersNum, neuronsPerHidden; // Number of inputs, outputs, hidden layers and units in every hidden layer
+    double mMeanSquaredError;  // Mean Squared Error which is changing every iteration of the training
+    double mMinMSE;          // The biggest Mean Squared Error required for training to stop
     int maxTrainItNum = 60000;
 }

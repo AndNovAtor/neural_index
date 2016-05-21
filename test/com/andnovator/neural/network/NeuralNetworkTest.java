@@ -2,6 +2,8 @@ package com.andnovator.neural.network;
 
 import com.andnovator.neural.indexing.*;
 import javafx.util.Pair;
+import org.junit.Assert;
+import org.junit.Test;
 
 //import java.util.concurrent.atomic.DoubleAccumulator;
 import java.util.*;
@@ -11,65 +13,53 @@ import java.util.stream.IntStream;
 
 public class NeuralNetworkTest {
 
-    public static void main(String[] args) {
-//        testDel();
-//        System.out.printf("%07d", Integer.toBinaryString(1024));
-        System.out.println("'str' to binary: " + NeuralIndex.strToBinaryStr("str"));
-        Map<String, PosFreqPair> map = new HashMap<>();
-        map.put("One", new PosFreqPair(1, 1));
-        map.put("Two", new PosFreqPair(2, 2));
-        map.put("Three", new PosFreqPair(3, 3));
-        map.put("Four", new PosFreqPair(4, 4));
-        map.put("Five", new PosFreqPair(5, 5));
-        System.out.println(NeuralIndex.maxMapStrLengthInLst(map));
-        //returnNetwTest();
-    }
 
-    public Pair<NeuralNetwork<Double>, ArrayList<Number>> returnNetwWithRespTest() {
-        ArrayList<ArrayList<Double> > DataToFeedNN = new ArrayList<>();
-        ArrayList<Double> Data1 = new ArrayList<>();
+    @Test
+    public void returnNetwWithRespTest() {
+        List<List<Double> > DataToFeedNN = new ArrayList<>();
+        List<Double> Data1 = new ArrayList<>();
         Data1.add(1.0);
         Data1.add(1.0);
 
         DataToFeedNN.add(Data1);
 
-        ArrayList<Double>  Data2 = new ArrayList<>();
+        List<Double>  Data2 = new ArrayList<>();
         Data2.add(1.0);
         Data2.add(-1.0);
 
         DataToFeedNN.add(Data2);
 
-        ArrayList<Double>  Data3 = new ArrayList<>();
+        List<Double>  Data3 = new ArrayList<>();
         Data3.add(-1.0);
         Data3.add(1.0);
 
         DataToFeedNN.add(Data3);
 
-        ArrayList<Double>  Data4 = new ArrayList<>();
+        List<Double>  Data4 = new ArrayList<>();
         Data4.add(-1.);
         Data4.add(-1.);
 
         //DataToFeedNN.add(Data4);
 
-        ArrayList<Double>  Data5 = new ArrayList<>();
+        List<Double>  Data5 = new ArrayList<>();
         Data5.add(0.);
         Data5.add(-1.0);
         //DataToFeedNN.add(Data5);
 
-        ArrayList<ArrayList<Double> > trainingSample = new ArrayList<>();
-        ArrayList<Double> ts1 = new ArrayList<>();
+        List<List<Double> > trainingSample = new ArrayList<>();
+        List<Double> ts1 = new ArrayList<>();
         ts1.add(-1.);
 
-        ArrayList<Double> ts2 = new ArrayList<>();
+        List<Double> ts2 = new ArrayList<>();
         ts2.add(1.);
 
-        ArrayList<Double> ts3 = new ArrayList<>();
+        List<Double> ts3 = new ArrayList<>();
         ts3.add(-1.);
 
-        ArrayList<Double> ts4 = new ArrayList<>();
+        List<Double> ts4 = new ArrayList<>();
         ts4.add(-1.);
 
-        //ArrayList<Double> ts5 = new ArrayList<>();
+        //List<Double> ts5 = new ArrayList<>();
         //ts5.add(-1.);
 
         trainingSample.add(ts1);
@@ -101,39 +91,41 @@ public class NeuralNetworkTest {
 //
 //        System.out.println();
 //        System.out.println("Input data: { test }");
-        return new Pair<>(NN, NN.GetNetResponse(Data5, true));
+
+//        return new Pair<>(NN, NN.GetNetResponse(Data5, true));
     }
 
-    public ArrayList<Number> testForFInd() {
-        ArrayList<ArrayList<Double> > DataToFeedNN = new ArrayList<>();
-        ArrayList<Double> Data1 = new ArrayList<>();
+    @Test
+    public void testForFInd() {
+        List<List<Double> > DataToFeedNN = new ArrayList<>();
+        List<Double> Data1 = new ArrayList<>();
         Data1.add(-1.);
         Data1.add(-1.);
         Data1.add(-1.);
         DataToFeedNN.add(Data1);
-        ArrayList<Double> Data2 = new ArrayList<>();
+        List<Double> Data2 = new ArrayList<>();
         Data2.add(-1.);
         Data2.add(1.);
         Data2.add(-1.);
         DataToFeedNN.add(Data2);
-        ArrayList<Double> Data3 = new ArrayList<>();
+        List<Double> Data3 = new ArrayList<>();
         Data3.add(1.);
         Data3.add(-1.);
         Data3.add(-1.);
         DataToFeedNN.add(Data3);
-        ArrayList<Double> Data4 = new ArrayList<>();
+        List<Double> Data4 = new ArrayList<>();
         Data4.add(-1.);
         Data4.add(1.);
         Data4.add(1.);
         DataToFeedNN.add(Data4);
-        ArrayList<ArrayList<Double> > trainingSample = new ArrayList<>();
-        ArrayList<Double> ts1 = new ArrayList<>();
+        List<List<Double> > trainingSample = new ArrayList<>();
+        List<Double> ts1 = new ArrayList<>();
         ts1.add(0.);
-        ArrayList<Double> ts2 = new ArrayList<>();
+        List<Double> ts2 = new ArrayList<>();
         ts2.add(0.01);
-        ArrayList<Double> ts3 = new ArrayList<>();
+        List<Double> ts3 = new ArrayList<>();
         ts3.add(0.);
-        ArrayList<Double> ts4 = new ArrayList<>();
+        List<Double> ts4 = new ArrayList<>();
         ts4.add(0.03);
         trainingSample.add(ts1);
         trainingSample.add(ts2);
@@ -151,31 +143,32 @@ public class NeuralNetworkTest {
         System.out.println("Input data: { 010 }");
         NN.GetNetResponse(DataToFeedNN.get(1));
 
-        ArrayList<Double> testData = new ArrayList<>();
+        List<Double> testData = new ArrayList<>();
         testData.add(-1.);
         testData.add(-1.);
         testData.add(1.);
-        return NN.GetNetResponse(testData);
+//        return NN.GetNetResponse(testData);
     }
 
-    static void testDel() {
+    @Test
+    public void testNumberToBitsAndDivisibleBy3() {
 
-        int inputNeuronNum = NeuralIndex.DEFAULT_BITS;
+        int inputNeuronNum = OneFileNeuralIndex.DEFAULT_BITS;
 
         List<Integer> numbers = IntStream.rangeClosed(0, 26).boxed().collect(Collectors.toList());
         Collections.shuffle(numbers);
 
         // Training sample: trInputDatas[i] are inputs, and trOutputDatas[i] are expected ouputs for that input
-        ArrayList<ArrayList<Double>> trInputDatas = new ArrayList<>();
-        ArrayList<ArrayList<Double>> trOutputDatas = new ArrayList<>();
+        List<List<Double>> trInputDatas = new ArrayList<>();
+        List<List<Double>> trOutputDatas = new ArrayList<>();
 
         for (Integer number : numbers) {
             // we train to answer: "is divisible by 3?"
             Double correctAnswer = number % 3 == 0 ? +1. : -1.;
-            ArrayList<Double> outputs = new ArrayList<>(1);
+            List<Double> outputs = new ArrayList<>(1);
             outputs.add(correctAnswer);
 
-            trInputDatas.add(NeuralIndex.numberToBits(number, NeuralIndex.DEFAULT_BITS));
+            trInputDatas.add(OneFileNeuralIndex.numberToBits(number, OneFileNeuralIndex.DEFAULT_BITS));
             trOutputDatas.add(outputs);
         }
 
@@ -194,14 +187,16 @@ public class NeuralNetworkTest {
         System.out.println("-- new values: 30 (true) and 31 (false) --");
 
         int newValue = 30; // a new value, that were not in the training set
-        ArrayList<Double> newInput = NeuralIndex.numberToBits(newValue, NeuralIndex.DEFAULT_BITS);
+        List<Double> newInput = OneFileNeuralIndex.numberToBits(newValue, OneFileNeuralIndex.DEFAULT_BITS);
         System.out.println("Input data: " + Arrays.toString(newInput.toArray()));
-        NN.GetNetResponse(newInput, true);
+        List<Number> response = NN.GetNetResponse(newInput, true);
+        Assert.assertEquals(1, Math.round(response.get(0).doubleValue()));
 
         newValue = 31; // a new value, that were not in the training set
-        newInput = NeuralIndex.numberToBits(newValue, NeuralIndex.DEFAULT_BITS);
+        newInput = OneFileNeuralIndex.numberToBits(newValue, OneFileNeuralIndex.DEFAULT_BITS);
         System.out.println("Input data: " + Arrays.toString(newInput.toArray()));
         NN.GetNetResponse(newInput, true);
+        Assert.assertEquals(1, Math.round(response.get(0).doubleValue()));
 
     }
 }

@@ -1,5 +1,6 @@
 package com.andnovator.neural.network;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -7,8 +8,11 @@ import java.util.concurrent.ThreadLocalRandom;
  * Created by novator on 01.11.2015.
  */
 public interface TrainAlgorithm<T> {  //TODO: Is it OK, if it's interface?
-    double Train(ArrayList<T> inData, ArrayList<T> inTarget); // +down to_do
+    double Train(List<T> inData, List<T> inTarget); // +down to_do
     void WeightsInitialization();  // TODO: "=0" in C++ - why near void?? (if it's interface, this is no matter)
+    default double getMaxAbsWeight() {
+        return 1.0;
+    }
 }
 
 
@@ -16,14 +20,14 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
 {
 
     Backpropagation(NeuralNetwork<T> inNeuralNetwork) { mNeuralNetwork = inNeuralNetwork; }
-    public double Train(ArrayList<T> inData, ArrayList<T> inTarget) {
+    public double Train(List<T> inData, List<T> inTarget) {
         /*
 	 * 		Check incoming data
 	*/
 
         double result = 0;
-        if( inData.size() != mNeuralNetwork.mInputs || inTarget.size() != mNeuralNetwork.mOutputs ){
-            System.out.println("Input data dimensions are wrong, expected: " + mNeuralNetwork.mInputs + " elements");
+        if( inData.size() != mNeuralNetwork.inputsNum || inTarget.size() != mNeuralNetwork.outputsNum){
+            System.out.println("Input data dimensions are wrong, expected: " + mNeuralNetwork.inputsNum + " elements");
 
             return -1;
         }
@@ -34,7 +38,7 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
 		 * 		broadcast this signal to all units in the layer above (the hidden units)
 		*/
 
-            for(int indexOfData = 0; indexOfData < mNeuralNetwork.mInputs; indexOfData++){
+            for(int indexOfData = 0; indexOfData < mNeuralNetwork.inputsNum; indexOfData++){
                 //System.out.println("input" << indexOfData << ": " << inData.get(indexOfData));
                 // TODO: !!!!!!  Hack with casting!!!!!!!!!!!!!!!!!!!!!!!!!!
                 mNeuralNetwork.GetInputLayer().get(indexOfData).Input((Double)inData.get(indexOfData));
@@ -62,8 +66,8 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
 		*/
 
 
-            ArrayList<Double> netResponseYk = new ArrayList<>();
-            for(int indexOfOutputElements = 0; indexOfOutputElements < mNeuralNetwork.mOutputs; indexOfOutputElements++){
+            List<Double> netResponseYk = new ArrayList<>();
+            for(int indexOfOutputElements = 0; indexOfOutputElements < mNeuralNetwork.outputsNum; indexOfOutputElements++){
 
                 double Yk = mNeuralNetwork.GetOutputLayer().get(indexOfOutputElements).Fire();
                 netResponseYk.add(Yk);
@@ -75,9 +79,9 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
 		 *		Computing error information for each output unit.
 		*/
 
-            for(int indexOfData = 0; indexOfData < mNeuralNetwork.mOutputs; indexOfData++){
+            for(int indexOfData = 0; indexOfData < mNeuralNetwork.outputsNum; indexOfData++){
                 result = mNeuralNetwork.GetOutputLayer().get(indexOfData).PerformTrainingProcess((Double)inTarget.get(indexOfData)); //TODO Casting!!!
-                mNeuralNetwork.AddMSE(result);
+                mNeuralNetwork.addMSE(result);
             }
 
 
@@ -102,6 +106,14 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
         NguyenWidrowWeightsInitialization();
     }
 
+    @Override
+    public double getMaxAbsWeight() {
+        double dNumOfInputs = mNeuralNetwork.getInputsNum();
+        double dNumOfHiddens = mNeuralNetwork.getHiddenLayersSize();
+        double degree = 1.0 / dNumOfInputs ;
+        return 0.7*(Math.pow( dNumOfHiddens , degree ) );
+    }
+
     protected void NguyenWidrowWeightsInitialization() {
         /*
          * 		Step 0. Initialize weights ( Set to small values )
@@ -112,10 +124,7 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
          *
         */
 
-        double dNumOfInputs = mNeuralNetwork.mInputs;
-        double dNumOfHiddens = mNeuralNetwork.mHidden;
-        double degree = 1.0 / dNumOfInputs ;
-        double dScaleFactor = 0.7*(Math.pow( dNumOfHiddens , degree ) );
+        double dScaleFactor = getMaxAbsWeight();
 
         for(int layerInd = 0; layerInd < mNeuralNetwork.size(); layerInd++){
             for(int neuronInd = 0; neuronInd < mNeuralNetwork.GetLayer(layerInd).size(); neuronInd++){
@@ -160,13 +169,14 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
             Neuron<T> Bias = mNeuralNetwork.GetBiasLayer().get(layerInd);
             for(int linkInd = 0; linkInd < Bias.GetNumOfLinks(); linkInd++){
                 NeuralLink<T> currentNeuralLink = Bias.get(linkInd);
-                double pseudoRandWeight = ThreadLocalRandom.current().nextDouble(-dScaleFactor,dScaleFactor);
+                double pseudoRandWeight = ThreadLocalRandom.current().nextDouble(-dScaleFactor, dScaleFactor);
                 //float pseudoRandWeight = 0;
                 currentNeuralLink.SetWeight(pseudoRandWeight);
                 //System.out.println("layerInd Bias: " << layerInd  << ", linkInd: " << linkInd << ", Weight: " << currentNeuralLink.GetWeight());
             }
         }
     }
+
     protected void CommonInitialization() {
 /*
 	 * 		Step 0. Initialize weights ( Set to small values )
@@ -212,7 +222,7 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
 class Genetic<T> implements TrainAlgorithm<T>
 {
     Genetic(NeuralNetwork<T> inNeuralNetwork) {}
-    public double Train(ArrayList<T> inData, ArrayList<T> inTarget) {return 0;}
+    public double Train(List<T> inData, List<T> inTarget) {return 0;}
     public void WeightsInitialization() { }
 
     //protected void NguyenWidrowWeightsInitialization() {}
