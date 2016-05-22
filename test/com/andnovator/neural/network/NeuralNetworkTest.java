@@ -1,8 +1,7 @@
 package com.andnovator.neural.network;
 
 import com.andnovator.neural.indexing.*;
-import javafx.util.Pair;
-import org.junit.Assert;
+import com.andnovator.utils.MathUtils;
 import org.junit.Test;
 
 //import java.util.concurrent.atomic.DoubleAccumulator;
@@ -10,9 +9,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.junit.Assert.assertEquals;
+
 
 public class NeuralNetworkTest {
 
+    public static final int DECIMAL_PREC = 1;
+    public static final double EPSILON = 1e-8;
 
     @Test
     public void returnNetwWithRespTest() {
@@ -70,27 +73,32 @@ public class NeuralNetworkTest {
 
         NeuralNetwork<Double> NN = new NeuralNetwork<>(2,1,5,4);
         NN.setMinMSE(0.0001);
+        NN.setMaxTrainItNum(200000);
         NN.Train(DataToFeedNN,trainingSample);
 
-//        System.out.println();
-//        System.out.println("Input data: { 1, 1 }");
-//        NN.GetNetResponse(DataToFeedNN.get(0), true);
-//
-//        System.out.println();
-//        System.out.println("Input data: { 1, 0 }");
-//        NN.GetNetResponse(DataToFeedNN.get(1), true);
-//
-//        System.out.println();
-//        System.out.println("Input data: { 0, 1 }");
-//        NN.GetNetResponse(DataToFeedNN.get(2), true);
-//
-//        System.out.println();
-//        System.out.println("Input data: { 0, 0 }");
-//        //NN.GetNetResponse(DataToFeedNN.get(3), true);
-//        NN.GetNetResponse(Data4);
-//
-//        System.out.println();
-//        System.out.println("Input data: { test }");
+        System.out.println();
+        System.out.println("Input data: { 1, 1 }");
+        List<Double> resp = NN.GetNetResponse(DataToFeedNN.get(0), true);
+        assertResponceEquals(trainingSample.get(0), resp, DECIMAL_PREC);
+
+        System.out.println();
+        System.out.println("Input data: { 1, 0 }");
+        resp = NN.GetNetResponse(DataToFeedNN.get(1), true);
+        assertResponceEquals(trainingSample.get(1), resp, DECIMAL_PREC);
+
+        System.out.println();
+        System.out.println("Input data: { 0, 1 }");
+        resp = NN.GetNetResponse(DataToFeedNN.get(2), true);
+        assertResponceEquals(trainingSample.get(2), resp, DECIMAL_PREC);
+
+        System.out.println();
+        System.out.println("Input data: { 0, 0 }");
+        //NN.GetNetResponse(DataToFeedNN.get(3), true);
+        resp = NN.GetNetResponse(Data4, true);
+        assertResponceEquals(Collections.singletonList(1.0), resp, 0);
+
+        System.out.println();
+        System.out.println("Input data: { test }");
 
 //        return new Pair<>(NN, NN.GetNetResponse(Data5, true));
     }
@@ -174,6 +182,7 @@ public class NeuralNetworkTest {
 
         NeuralNetwork<Double> NN = new NeuralNetwork<>(inputNeuronNum,1,4,inputNeuronNum*2);
         NN.setMinMSE(0.0001);
+        NN.setMaxTrainItNum(200000);
         NN.Train(trInputDatas,trOutputDatas);
 
         System.out.println("Trained!");
@@ -189,14 +198,21 @@ public class NeuralNetworkTest {
         int newValue = 30; // a new value, that were not in the training set
         List<Double> newInput = OneFileNeuralIndex.numberToBits(newValue, OneFileNeuralIndex.DEFAULT_BITS);
         System.out.println("Input data: " + Arrays.toString(newInput.toArray()));
-        List<Number> response = NN.GetNetResponse(newInput, true);
-        Assert.assertEquals(1, Math.round(response.get(0).doubleValue()));
+        List<Double> response = NN.GetNetResponse(newInput, true);
+        assertEquals(1, Math.round(response.get(0)));
 
         newValue = 31; // a new value, that were not in the training set
         newInput = OneFileNeuralIndex.numberToBits(newValue, OneFileNeuralIndex.DEFAULT_BITS);
         System.out.println("Input data: " + Arrays.toString(newInput.toArray()));
         NN.GetNetResponse(newInput, true);
-        Assert.assertEquals(1, Math.round(response.get(0).doubleValue()));
+        assertEquals(1, Math.round(response.get(0)));
 
+    }
+
+    private void assertResponceEquals(List<Double> expected, List<Double> actual, int decimalPoints) {
+        assertEquals(expected.size(), actual.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i), MathUtils.roundToDec(actual.get(i), decimalPoints), EPSILON);
+        }
     }
 }

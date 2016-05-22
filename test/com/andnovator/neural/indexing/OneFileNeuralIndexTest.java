@@ -17,20 +17,8 @@ import java.util.Map;
 public class OneFileNeuralIndexTest {
 
     private String defaultFilePath = "neural_index.txt";
+    private String defaultSerFilePath = "neural_index.ser";
     private String defaultSeparator = "; ";
-
-    @Test
-    public void simpleTest() {
-        System.out.println("'str' to binary: " + OneFileNeuralIndex.strToBinaryStr("str"));
-        Map<String, PosFreqPair> map = new HashMap<>();
-        map.put("One", new PosFreqPair(1, 1));
-        map.put("Two", new PosFreqPair(2, 2));
-        map.put("Three", new PosFreqPair(3, 3));
-        map.put("Four", new PosFreqPair(4, 4));
-        map.put("Five", new PosFreqPair(5, 5));
-        Assert.assertEquals(5, OneFileNeuralIndex.maxMapStrLengthInLst(map));
-        System.out.println(Math.round(26533.499999999996));
-    }
 
     @Test
     public void returnNetwWithRespTest() throws Exception {
@@ -68,7 +56,7 @@ public class OneFileNeuralIndexTest {
             fileWordsMap.put(oneFileWords.get(i), new PosFreqPair(i,1));
         }
         OneFileNeuralIndex fileNIndex = new OneFileNeuralIndex();
-        fileNIndex.setNetworkMinMSE(0.1); // FIXME: OH COME ON
+        fileNIndex.setNetworkMinMSE(0.01);
         Assert.assertTrue( fileNIndex.trainIndex(fileWordsMap, allWords) );
         int[] resArr;
         for (String word : allWords) {
@@ -76,7 +64,22 @@ public class OneFileNeuralIndexTest {
             resArr = fileNIndex.wordSearch(word, true);
             System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
         }
-        new NetworkFileSerializer(defaultFilePath).saveNetwork(fileNIndex.getNeuroIndexNetwork());
+        new NetworkFileSerializer(defaultSerFilePath).seralizeNetwork(fileNIndex.getNeuroIndexNetwork());
+//        new NetworkFileSerializer(defaultFilePath).saveNetwork(fileNIndex.getNeuroIndexNetwork());
 //        return new Pair<>(fileNIndex.getNeuroIndexNetwork(), fileNIndex.wordSearchNetResponce(allWords.get(18)));
+    }
+
+    @Test
+    public void simpleTest() throws Exception {
+        /*System.out.println("'str' to binary: " + OneFileNeuralIndex.strToBinaryStr("str"));
+        Map<String, PosFreqPair> map = new HashMap<>();
+        map.put("One", new PosFreqPair(1, 1));
+        map.put("Two", new PosFreqPair(2, 2));
+        map.put("Three", new PosFreqPair(3, 3));
+        map.put("Four", new PosFreqPair(4, 4));
+        map.put("Five", new PosFreqPair(5, 5));
+        Assert.assertEquals(5, OneFileNeuralIndex.maxMapStrLengthInLst(map));
+        System.out.println(Math.round(26533.499999999996));*/
+        NetworkFileSerializer.convertNNTxtToSerBin(defaultFilePath,NetworkFileSerializer.DEFAULT_SEPARATOR, defaultSerFilePath);
     }
 }

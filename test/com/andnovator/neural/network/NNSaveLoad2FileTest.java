@@ -12,9 +12,8 @@ import static org.junit.Assert.assertEquals;
 public class NNSaveLoad2FileTest {
 
     private String defaultFilePath = "neural_network.txt";
+    private String defaultSerFilePath = "neural_network_ser";
     private String defaultSeparator = "; ";
-
-    public static final double EPSILON = 1e-8;
 
     @Test
     public void testSave() throws Exception {
@@ -31,6 +30,25 @@ public class NNSaveLoad2FileTest {
         assertEquals(3, nn.getOutputsNum());
         assertEquals(5, nn.getHiddenLayersNum());
         assertEquals(6, nn.getHiddenLayersSize());
-        assertEquals(0.002, nn.getMinMSE(), EPSILON);
+        assertEquals(0.002, nn.getMinMSE(), NeuralNetworkTest.EPSILON);
+    }
+
+    @Test
+    public void testSerialize() throws Exception {
+        NeuralNetwork<Double> nn = new NeuralNetwork<>(3, 2, 4, 6);
+        nn.setMinMSE(0.01);
+        nn.setMaxTrainItNum(40_000);
+        new NetworkFileSerializer(defaultSerFilePath).seralizeNetwork(nn);
+    }
+
+    @Test
+    public void testDeserialize() throws Exception {
+        NeuralNetwork<Double> nn = new NetworkFileSerializer(defaultSerFilePath).deserializeNetwork();
+        assertEquals(3, nn.getInputsNum());
+        assertEquals(2, nn.getOutputsNum());
+        assertEquals(4, nn.getHiddenLayersNum());
+        assertEquals(6, nn.getHiddenLayersSize());
+        assertEquals(0.01, nn.getMinMSE(), NeuralNetworkTest.EPSILON);
+        assertEquals(40_000, nn.getMaxTrainItNum());
     }
 }

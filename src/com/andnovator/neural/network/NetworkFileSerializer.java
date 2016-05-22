@@ -14,8 +14,10 @@ import static java.util.stream.Collectors.joining;
  * Created by novator on 21.05.2016.
  */
 public class NetworkFileSerializer {
+    public static final String DEFAULT_SEPARATOR = " ";
+
     private String fileName;
-    private String separator = " ";
+    private String separator = DEFAULT_SEPARATOR;
 
     public NetworkFileSerializer(String filePath) {
         fileName = filePath;
@@ -61,7 +63,7 @@ public class NetworkFileSerializer {
             double minMSE = Double.valueOf(configLine[nextField++]);
             int maxTrainItNum = Integer.valueOf(configLine[nextField++]);
 
-            NeuralNetwork<T> nn = new NeuralNetwork<T>(inputsNum, outputsNum, hiddenLayersNum, hiddenLayersSize);
+            NeuralNetwork<T> nn = new NeuralNetwork<>(inputsNum, outputsNum, hiddenLayersNum, hiddenLayersSize);
 
             String[] biasWeightsLine = getNextLine(reader, lineNumber).split(separator);
             List<Double> biasWeights = Arrays.stream(biasWeightsLine)
@@ -101,5 +103,45 @@ public class NetworkFileSerializer {
             lineNumber.incrementAndGet();
         }
         return line;
+    }
+
+    public <T> void seralizeNetwork(NeuralNetwork<T> nn) throws IOException {
+        List<List<Double>> netWeights = nn.exportNetworkWeights();
+        try (ObjectOutputStream ostream = new ObjectOutputStream(new FileOutputStream(fileName))) {
+            ostream.writeInt(nn.getInputsNum());
+            ostream.writeInt(nn.getOutputsNum());
+            ostream.writeInt(nn.getHiddenLayersNum());
+            ostream.writeInt(nn.getHiddenLayersSize());
+            ostream.writeDouble(nn.getMinMSE());
+            ostream.writeInt(nn.getMaxTrainItNum());
+            ostream.writeObject(netWeights.get(0));
+            ostream.writeObject(netWeights.get(1));
+        }
+
+    }
+
+    public <T> NeuralNetwork<T> deserializeNetwork() throws IOException, ClassNotFoundException {
+        try (ObjectInputStream istream = new ObjectInputStream(new FileInputStream(fileName))) {
+            int inputsNum = istream.readInt();
+            int outputsNum = istream.readInt();
+            int hiddenLayersNum = istream.readInt();
+            int hiddenLayersSize = istream.readInt();
+            double minMSE = istream.readDouble();
+            int maxTrainItNum = istream.readInt();
+            NeuralNetwork<T> nn  = new NeuralNetwork<>(inputsNum, outputsNum, hiddenLayersNum, hiddenLayersSize);
+            nn.setMinMSE(minMSE);
+            nn.setMaxTrainItNum(maxTrainItNum);
+            @SuppressWarnings("unchecked")
+            List<Double> biasWeights = (List<Double>)istream.readObject();
+            @SuppressWarnings("unchecked")
+            List<Double> simpleWeights = (List<Double>)istream.readObject();
+            nn.setNetworkWeights(biasWeights, simpleWeights);
+            return nn;
+        }
+    }
+
+    static public void convertNNTxtToSerBin(String txtFileName, String txtSeparatoer, String serFileName) throws Exception {
+        NeuralNetwork<Double> nn = new NetworkFileSerializer(txtFileName, txtSeparatoer).loadNetwork();
+        new NetworkFileSerializer(serFileName).seralizeNetwork(nn);
     }
 }

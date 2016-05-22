@@ -8,7 +8,6 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Stream.concat;
 
 /**
  * Neural network class.
@@ -171,8 +170,8 @@ public class NeuralNetwork<T> {
      * @param inData - a List data to feed with.
      */
 
-    public List<Number> GetNetResponse(List<T> inData, boolean printResults) {
-        List<Number> netResponse = new ArrayList<>();
+    public List<Double> GetNetResponse(List<T> inData, boolean printResults) {
+        List<Double> netResponse = new ArrayList<>();
         if (inData.size() != inputsNum) {
             System.out.println("Input data dimensions are wrong, expected: " + inputsNum + " elements");
 
@@ -215,7 +214,7 @@ public class NeuralNetwork<T> {
         }
     }
 
-    public List<Number> GetNetResponse(List<T> inData) {
+    public List<Double> GetNetResponse(List<T> inData) {
         return this.GetNetResponse(inData, false);
     }
 

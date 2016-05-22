@@ -113,10 +113,10 @@ public class OneFileNeuralIndex {
         return strToDoubleBitArrList(str, inputsNum);
     }
 
-    static int bitsListToInt(List<Number> bitsArrLst) throws IllegalArgumentException {
+    static int bitsListToInt(List<Double> bitsArrLst) throws IllegalArgumentException {
         int res = 0;
         for (int i = 0; i < bitsArrLst.size(); i++) {
-            double dBit = Math.round((double)bitsArrLst.get(i));
+            double dBit = Math.round(bitsArrLst.get(i));
             res <<= 1;
             if (dBit == 1) {
                 res += 1;
@@ -294,20 +294,20 @@ public class OneFileNeuralIndex {
     }
     public int[] wordSearch(String word, boolean isResPrint){
         int[] resArr = {-1, -1};
-        List<Number> resArrLst = wordSearchNetResponce(word, isResPrint);
+        List<Double> resArrLst = wordSearchNetResponce(word, isResPrint);
         if (resArrLst != null) {
             // FIXME: there must not be just ".round"!
-            if (Math.round((double)(resArrLst.get(0))) == 1) {
+            if (Math.round((resArrLst.get(0))) == 1) {
                 resArr[0] = bitsListToInt(resArrLst.subList(1, outputPosBitsNum+1));
                 resArr[1] = bitsListToInt(resArrLst.subList(outputPosBitsNum+1, outputBitsNum));
             }
         }
         return resArr;
     }
-    List<Number> wordSearchNetResponce(String word) {
+    List<Double> wordSearchNetResponce(String word) {
         return wordSearchNetResponce(word, false);
     }
-    List<Number> wordSearchNetResponce(String word, boolean isResPrint) {
+    List<Double> wordSearchNetResponce(String word, boolean isResPrint) {
         /*Arrays.stream( "str".getBytes(StandardCharsets.US_ASCII) )
                 .map ( ch -> ch - 'a' )
                 .flatMap ( ch -> numberToBits(ch).stream() )
