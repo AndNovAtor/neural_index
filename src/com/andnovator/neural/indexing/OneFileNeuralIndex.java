@@ -1,7 +1,10 @@
 package com.andnovator.neural.indexing;
 
+import com.andnovator.neural.network.NetworkFileSerializer;
 import com.andnovator.neural.network.NeuralNetwork;
+import com.andnovator.utils.MathUtils;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -28,6 +31,13 @@ public class OneFileNeuralIndex {
     public OneFileNeuralIndex(NeuralNetwork<Double> neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
         this.neuroIndexNetwork = neuroIndexNetwork;
         updateNetworkParams(posBitsNum, freqBitsNum);
+    }
+    private void setNINetwork(NeuralNetwork<Double> neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
+        this.neuroIndexNetwork = neuroIndexNetwork;
+        updateNetworkParams(posBitsNum, freqBitsNum);
+    }
+    public void loadSerializedNetwork(String filepath) throws IOException, ClassNotFoundException {
+        setNINetwork(new NetworkFileSerializer(filepath).<Double>deserializeNetwork(), outputPosBitsNum, outputFreqBitsNum);
     }
 
 
@@ -253,14 +263,20 @@ public class OneFileNeuralIndex {
     }
 
     //FIXME: use staic constant, for example - NOT in code
-    public boolean trainIndex(Map<String,PosFreqPair> itemWordsMap, List<String> allWordsList) {
+    public boolean trainIndex(Map<String, PosFreqPair> itemWordsMap, List<String> allWordsList, boolean recreateNetwork) {
 //        return trainIndex(itemWordsMap, allWordsList, 15);
-        return trainIndex(itemWordsMap, allWordsList, maxStrLengthInLst(allWordsList));
+        return trainIndex(itemWordsMap, allWordsList, maxStrLengthInLst(allWordsList), recreateNetwork);
+    }
+    public boolean trainIndex(Map<String, PosFreqPair> itemWordsMap, List<String> allWordsList) {
+//        return trainIndex(itemWordsMap, allWordsList, 15);
+        return trainIndex(itemWordsMap, allWordsList, maxStrLengthInLst(allWordsList), true);
     }
 
-    public boolean trainIndex(Map<String,PosFreqPair> itemWordsMap, List<String> allWordsList, int maxLangWordLength) {
+    public boolean trainIndex(Map<String, PosFreqPair> itemWordsMap, List<String> allWordsList, int maxLangWordLength, boolean recreateNetwork) {
 //        createNINetwork(maxMapStrLengthInLst(itemWordsMap), 1e-4);
-        createNINetwork(maxLangWordLength, networkMinMSE);
+        if ((neuroIndexNetwork == null) || recreateNetwork) {
+            createNINetwork(maxLangWordLength, networkMinMSE);
+        }
         List<List<Double>> wordsToFeed = new ArrayList<>();
         List<List<Double>> trainingSample = new ArrayList<>();
         for (String word : itemWordsMap.keySet()) {
@@ -276,7 +292,7 @@ public class OneFileNeuralIndex {
                 trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
             }
         } else {
-            Collections.shuffle(allWordsList);
+            //Collections.shuffle(allWordsList);
             int wordsAdded = 0;
             for (String otherWord : allWordsList) {
                 if (itemWordsMap.get(otherWord) == null) {
@@ -297,9 +313,13 @@ public class OneFileNeuralIndex {
         List<Double> resArrLst = wordSearchNetResponce(word, isResPrint);
         if (resArrLst != null) {
             // FIXME: there must not be just ".round"!
-            if (Math.round((resArrLst.get(0))) == 1) {
-                resArr[0] = bitsListToInt(resArrLst.subList(1, outputPosBitsNum+1));
-                resArr[1] = bitsListToInt(resArrLst.subList(outputPosBitsNum+1, outputBitsNum));
+            if (MathUtils.roundToDec(resArrLst.get(0), 1) == 1) {
+                try {
+                    resArr[0] = bitsListToInt(resArrLst.subList(1, outputPosBitsNum + 1));
+                    resArr[1] = bitsListToInt(resArrLst.subList(outputPosBitsNum + 1, outputBitsNum));
+                } catch (IllegalArgumentException e) {
+                    return new int[]{-1, -1};
+                }
             }
         }
         return resArr;

@@ -144,4 +144,9 @@ public class NetworkFileSerializer {
         NeuralNetwork<Double> nn = new NetworkFileSerializer(txtFileName, txtSeparatoer).loadNetwork();
         new NetworkFileSerializer(serFileName).seralizeNetwork(nn);
     }
+
+    static public void convertNNSerBinToTxt(String serFileName, String txtFileName, String txtSeparatoer) throws Exception {
+        NeuralNetwork<Double> nn = new NetworkFileSerializer(serFileName).deserializeNetwork();
+        new NetworkFileSerializer(txtFileName, txtSeparatoer).saveNetwork(nn);
+    }
 }

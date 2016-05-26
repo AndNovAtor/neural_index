@@ -2,7 +2,6 @@ package com.andnovator.neural.network;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 /**
  * Created by novator on 01.11.2015.
@@ -112,8 +111,7 @@ public class Neuron<T> {
 
             pCurrentLink.SetLastTranslatedSignal(dXi);
             pCurrentNeuronLinkedTo.Input( dOutput );
-            //std::cout << "Link: " << iLink << ", Neuron fired: " << dOutput << " as func of: " << dCharge << " * " << dWeight << std::endl;
-            //mLinksToNeurons[iLink].GetNeuronLinkedTo().Input(mNetFunc.Process(mSumOfCharges*mLinksToNeurons[iLink].GetWeight()));
+            //System.out.println("Link: " + iLink + ", Neuron fired: " + dOutput + " as func of: " + dCharge + " * " + dWeight);
         }
         //mSumOfCharges = 0;
         return mSumOfCharges;
@@ -126,7 +124,7 @@ public class Neuron<T> {
     double Derivative( ) { return mNetFunc.Derivative(mSumOfCharges); }
 
     void SetInputLink( NeuralLink<T> inLink ) { mInputLinks.add( inLink ); }
-    LinkedList<NeuralLink<T>> GetInputLink( ) { return mInputLinks; }
+    List<NeuralLink<T>> GetInputLink( ) { return mInputLinks; }
 
 
 
@@ -146,7 +144,7 @@ public class Neuron<T> {
         }
     }
     protected NetworkFunction mNetFunc;
-    protected LinkedList<NeuralLink<T>> mInputLinks = new LinkedList<>();
+    protected List<NeuralLink<T>> mInputLinks = new ArrayList<>();
     protected List<NeuralLink<T>> mLinksToNeurons = new ArrayList<>();
 
     protected double mSumOfCharges;
@@ -181,7 +179,7 @@ class OutputLayerNeuronDecorator<T> extends Neuron<T> {
     public double Derivative( ) 			{ return mNeuron.Derivative( ); }
 
     public void SetInputLink( NeuralLink<T> inLink ) { mNeuron.SetInputLink( inLink ); }
-    public LinkedList<NeuralLink<T>>	GetInputLink( ) 			{ return mNeuron.GetInputLink( ); }
+    public List<NeuralLink<T>> GetInputLink( ) 			{ return mNeuron.GetInputLink( ); }
 
     public double PerformTrainingProcess(double inTarget) {
         double res;
@@ -274,7 +272,7 @@ class HiddenLayerNeuronDecorator<T> extends Neuron<T>
     double Derivative( ) 			{ return mNeuron.Derivative( ); }
 
     void SetInputLink( NeuralLink<T> inLink ) { mNeuron.SetInputLink( inLink ); }
-    LinkedList<NeuralLink<T>>	GetInputLink( ) 			{ return mNeuron.GetInputLink( ); }
+    List<NeuralLink<T>> GetInputLink( ) 			{ return mNeuron.GetInputLink( ); }
 
     double PerformTrainingProcess(double inTarget) {
         /*

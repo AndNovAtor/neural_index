@@ -414,8 +414,8 @@ public class NeuralNetwork<T> {
 
     NeuronFactory<T> mNeuronFactory;       /*!< Member, which is responsible for creating neurons @see SetNeuronFactory */
     TrainAlgorithm<T> mTrainingAlgoritm;      /*!< Member, which is responsible for the way the network will trained @see SetAlgorithm */
-    List<List<Neuron<T>>> mLayers = new LinkedList<>();   /*!< Inner representation of neural networks */
-    List<Neuron<T>> mBiasLayer = new LinkedList<>();          /*!< Container for biases */
+    List<List<Neuron<T>>> mLayers = new ArrayList<>();   /*!< Inner representation of neural networks */
+    List<Neuron<T>> mBiasLayer = new ArrayList<>();          /*!< Container for biases */
 
     public int getInputsNum() { return inputsNum; }
     public int getOutputsNum() { return outputsNum; }

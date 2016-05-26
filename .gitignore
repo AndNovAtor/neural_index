@@ -53,3 +53,7 @@ out/
 # IntelliJ Idea files
 **/.idea/workspace.xml
 **/.idea/tasks.xml
+*.ser
+neural_index.txt
+neural_index.txt2
+neural_network.txt
