@@ -1,15 +1,16 @@
 package com.andnovator.neural.indexing;
 
 import com.andnovator.neural.network.NetworkFileSerializer;
-import com.andnovator.neural.network.NeuralNetwork;
-import javafx.util.Pair;
+import com.andnovator.utils.FileLemmatizationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by novator on 10.05.2016.
@@ -21,31 +22,80 @@ public class OneFileNeuralIndexTest {
     private String defaultSerFileExt = ".ser";
     private String defaultSerFilePath = defaultSerFileName+defaultSerFileExt;
     private String defaultSeparator = "; ";
+    public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
+    public static final SimpleDateFormat SDF_YMD_HMS = new SimpleDateFormat(DATE_FORMAT_NOW);
+
+    @Test
+    public void indexOneFileTest() throws Exception {
+//        DocumentWords documentWords = IndexingFileLoader.loadDocument("file.txt");
+
+        Set<String> allFilesWords = new HashSet<>();
+        Map<String, PosFreqPair> wordsMapOneFile = IndexingFileLoader.loadFile("file.txt");
+        allFilesWords.addAll(wordsMapOneFile.keySet());
+        //Some static add other words
+        allFilesWords.add("nebulous");      // 1
+        allFilesWords.add("scare");         // 2
+        allFilesWords.add("rhythm");        // 3
+        allFilesWords.add("brief");         // 4
+        allFilesWords.add("flash");         // 5
+        allFilesWords.add("evanescent");    // 6
+        allFilesWords.add("hum");           // 7
+        allFilesWords.add("sloppy");        // 8
+        allFilesWords.add("alcoholic");     // 9
+        allFilesWords.add("jumbled");       // 10
+        allFilesWords.add("tame");          // 11
+        allFilesWords.add("heavenly");      // 12
+        allFilesWords.add("duck");          // 13
+        allFilesWords.add("makeshift");     // 14
+        allFilesWords.add("intend");        // 15
+        allFilesWords.add("distance");      // 16
+        allFilesWords.add("remarkable");    // 17
+        allFilesWords.add("thoughtless");   // 18
+        allFilesWords.add("hat");           // 19
+        allFilesWords.add("food");          // 20
+        //
+
+        OneFileNeuralIndex fileNIndex = new OneFileNeuralIndex();
+        fileNIndex.setNetworkMinMSE(0.01);
+
+        ArrayList<String> allWordsLst = new ArrayList<>(allFilesWords);
+        Assert.assertTrue( fileNIndex.trainIndex(wordsMapOneFile, allWordsLst) );
+        int[] resArr;
+        for (String word : allWordsLst) {
+            System.out.println("For word: " + word);
+            resArr = fileNIndex.wordSearch(word, true);
+            System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
+        }
+
+        //new NetworkFileSerializer(defaultSerFileName+"_"+ SDF_YMD_HMS.format(new Date()) +defaultSerFileExt).seralizeNetwork(fileNIndex2.getNeuroIndexNetwork());
+//        new NetworkFileSerializer(defaultFilePath).saveNetwork(fileNIndex.getNeuroIndexNetwork());
+//        return new Pair<>(fileNIndex.getNeuroIndexNetwork(), fileNIndex.wordSearchNetResponce(allWords.get(18)));
+    }
 
     @Test
     public void returnNetwWithRespTest() throws Exception {
         //All words:
         List<String> allWords = new ArrayList<>();
-        allWords.add("nebulous");	    // 1
-        allWords.add("scare");		    // 2
-        allWords.add("rhythm");		    // 3
-        allWords.add("brief");		    // 4
-        allWords.add("flash");		    // 5
-        allWords.add("evanescent");	    // 6
-        allWords.add("hum");		    // 7
-        allWords.add("sloppy");		    // 8
-        allWords.add("alcoholic");	    // 9
-        allWords.add("jumbled");	    // 10
-        allWords.add("tame");		    // 11
-        allWords.add("heavenly");	    // 12
-        allWords.add("ducks");		    // 13
-        allWords.add("makeshift");	    // 14
-        allWords.add("intend");		    // 15
-        allWords.add("distance");	    // 16
-        allWords.add("remarkable");	    // 17
-        allWords.add("thoughtless");    // 18
-        allWords.add("hat");		    // 19
-        allWords.add("food");		    // 20
+        allWords.add("nebulous");      // 1
+        allWords.add("scare");         // 2
+        allWords.add("rhythm");        // 3
+        allWords.add("brief");         // 4
+        allWords.add("flash");         // 5
+        allWords.add("evanescent");    // 6
+        allWords.add("hum");           // 7
+        allWords.add("sloppy");        // 8
+        allWords.add("alcoholic");     // 9
+        allWords.add("jumbled");       // 10
+        allWords.add("tame");          // 11
+        allWords.add("heavenly");      // 12
+        allWords.add("duck");          // 13
+        allWords.add("makeshift");     // 14
+        allWords.add("intend");        // 15
+        allWords.add("distance");      // 16
+        allWords.add("remarkable");    // 17
+        allWords.add("thoughtless");   // 18
+        allWords.add("hat");           // 19
+        allWords.add("food");          // 20
         //end all words
         //File:
         List<String> oneFileWords = allWords.subList(0,10);
@@ -81,7 +131,7 @@ public class OneFileNeuralIndexTest {
             resArr = fileNIndex2.wordSearch(word, true);
             System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
         }
-        new NetworkFileSerializer(defaultSerFileName+"2"+defaultSerFileExt).seralizeNetwork(fileNIndex2.getNeuroIndexNetwork());
+        new NetworkFileSerializer(defaultSerFileName+"_"+ SDF_YMD_HMS.format(new Date()) +defaultSerFileExt).seralizeNetwork(fileNIndex2.getNeuroIndexNetwork());
 //        new NetworkFileSerializer(defaultFilePath).saveNetwork(fileNIndex.getNeuroIndexNetwork());
 //        return new Pair<>(fileNIndex.getNeuroIndexNetwork(), fileNIndex.wordSearchNetResponce(allWords.get(18)));
     }
@@ -99,5 +149,29 @@ public class OneFileNeuralIndexTest {
         System.out.println(Math.round(26533.499999999996));*/
         //NetworkFileSerializer.convertNNTxtToSerBin(defaultFilePath,NetworkFileSerializer.DEFAULT_SEPARATOR, defaultSerFilePath);
         NetworkFileSerializer.convertNNSerBinToTxt(defaultSerFileName+"2"+defaultSerFileExt, defaultFilePath+"2", NetworkFileSerializer.DEFAULT_SEPARATOR );
+    }
+
+    @Test
+    public void testScanner() throws Exception {
+        try (Scanner input = new Scanner(new File("file.txt"))) {
+            List<String> wordLst = new ArrayList<>(5);
+            while (input.hasNext()) {
+                wordLst.add(input.next());
+            }
+            System.out.println("Lst:");
+            wordLst.forEach(System.out::println);
+        } // catch (FileNotFoundException e)
+        //Below - surround with catch IOException
+        System.out.println(new String(Files.readAllBytes(Paths.get("file.txt")), StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void testCorelNLP() throws Exception {
+        DocumentWords documentWords = IndexingFileLoader.loadDocument("file.txt");
+    }
+
+    @Test
+    public void testFileNormalization() throws Exception {
+        FileLemmatizationUtils.fileLemmNormalization("file2.txt");
     }
 }

@@ -296,10 +296,10 @@ public class OneFileNeuralIndex {
             int wordsAdded = 0;
             for (String otherWord : allWordsList) {
                 if (itemWordsMap.get(otherWord) == null) {
+                    if (wordsAdded>=someConstantOtherWordFeedNum) { break; }
                     wordsToFeed.add(strToDoubleBits(otherWord));
                     trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
                     ++wordsAdded;
-                    if (wordsAdded>=someConstantOtherWordFeedNum) { break; }
                 }
             }
         }

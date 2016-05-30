@@ -1,8 +1,8 @@
 package com.andnovator.neural.indexing;
 
 public class PosFreqPair {
-    private int position;
-    private int frequency;
+    private int position = -1;
+    private int frequency = 0;
     public PosFreqPair(int position, int frequency) {
         this.position = position;
         this.frequency = frequency;
