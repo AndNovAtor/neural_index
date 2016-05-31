@@ -39,7 +39,11 @@ public class OneFileNeuralIndex {
     public void loadSerializedNetwork(String filepath) throws IOException, ClassNotFoundException {
         setNINetwork(new NetworkFileSerializer(filepath).<Double>deserializeNetwork(), outputPosBitsNum, outputFreqBitsNum);
     }
-
+    public static OneFileNeuralIndex loadSerializedIndex(String filepath) throws IOException, ClassNotFoundException {
+        OneFileNeuralIndex ni = new OneFileNeuralIndex();
+        ni.loadSerializedNetwork(filepath);
+        return ni;
+    }
 
     private void createNINetwork(int maxWordLength) {
         setMaxWordLength(maxWordLength);
@@ -126,11 +130,11 @@ public class OneFileNeuralIndex {
     static int bitsListToInt(List<Double> bitsArrLst) throws IllegalArgumentException {
         int res = 0;
         for (int i = 0; i < bitsArrLst.size(); i++) {
-            double dBit = Math.round(bitsArrLst.get(i));
+            double dBit = bitsArrLst.get(i);
             res <<= 1;
-            if (dBit == 1) {
+            if (isDoubleBitOne(dBit)) {
                 res += 1;
-            } else if (dBit != -1) {
+            } else if (!isDoubleBitZero(dBit)) {
                 throw new IllegalArgumentException("Net responce on "+i+" place != 1 by abs - get:" + bitsArrLst.get(i));
             }
         }
@@ -313,7 +317,7 @@ public class OneFileNeuralIndex {
         List<Double> resArrLst = wordSearchNetResponce(word, isResPrint);
         if (resArrLst != null) {
             // FIXME: there must not be just ".round"!
-            if (MathUtils.roundToDec(resArrLst.get(0), 1) == 1) {
+            if ( isDoubleBitOne(resArrLst.get(0)) ) {
                 try {
                     resArr[0] = bitsListToInt(resArrLst.subList(1, outputPosBitsNum + 1));
                     resArr[1] = bitsListToInt(resArrLst.subList(outputPosBitsNum + 1, outputBitsNum));
@@ -338,5 +342,15 @@ public class OneFileNeuralIndex {
         } else {
             return null;
         }
+    }
+
+    public static boolean isDoubleBitZero(double val) {
+        return (1+val < 0.1);
+    }
+    public static boolean isDoubleBitOne(double val) {
+        return (1-val < 0.1);
+    }
+    public static boolean isDoubleBitZeroOrOne(double val) {
+        return isDoubleBitZero(val) || isDoubleBitOne(val);
     }
 }

@@ -1,6 +1,7 @@
 package com.andnovator.neural.indexing;
 
 import com.andnovator.neural.network.NetworkFileSerializer;
+import com.andnovator.neural.network.NeuralNetwork;
 import com.andnovator.utils.FileLemmatizationUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,7 +23,7 @@ public class OneFileNeuralIndexTest {
     private String defaultSerFileExt = ".ser";
     private String defaultSerFilePath = defaultSerFileName+defaultSerFileExt;
     private String defaultSeparator = "; ";
-    public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
+    public static final String DATE_FORMAT_NOW = "yyyy-MM-dd_HH.mm.ss";
     public static final SimpleDateFormat SDF_YMD_HMS = new SimpleDateFormat(DATE_FORMAT_NOW);
 
     @Test
@@ -67,9 +68,42 @@ public class OneFileNeuralIndexTest {
             System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
         }
 
-        //new NetworkFileSerializer(defaultSerFileName+"_"+ SDF_YMD_HMS.format(new Date()) +defaultSerFileExt).seralizeNetwork(fileNIndex2.getNeuroIndexNetwork());
+        new NetworkFileSerializer(defaultSerFileName+"_"+ SDF_YMD_HMS.format(new Date()) +defaultSerFileExt).seralizeNetwork(fileNIndex.getNeuroIndexNetwork());
 //        new NetworkFileSerializer(defaultFilePath).saveNetwork(fileNIndex.getNeuroIndexNetwork());
 //        return new Pair<>(fileNIndex.getNeuroIndexNetwork(), fileNIndex.wordSearchNetResponce(allWords.get(18)));
+    }
+
+    @Test
+    public void wordSearchBySerNetworkTest() throws Exception {
+
+        OneFileNeuralIndex fileNIndex = OneFileNeuralIndex.loadSerializedIndex(defaultSerFileName + "_2016-05-31_11.35.11" + defaultSerFileExt);
+        int[] resArr;
+        List<String> allWords = new ArrayList<>();
+        allWords.add("nebulous");      // 1
+        allWords.add("scare");         // 2
+        allWords.add("rhythm");        // 3
+        allWords.add("brief");         // 4
+        allWords.add("flash");         // 5
+        allWords.add("evanescent");    // 6
+        allWords.add("hum");           // 7
+        allWords.add("sloppy");        // 8
+        allWords.add("alcoholic");     // 9
+        allWords.add("jumbled");       // 10
+        allWords.add("tame");          // 11
+        allWords.add("heavenly");      // 12
+        allWords.add("duck");          // 13
+        allWords.add("makeshift");     // 14
+        allWords.add("intend");        // 15
+        allWords.add("distance");      // 16
+        allWords.add("remarkable");    // 17
+        allWords.add("thoughtless");   // 18
+        allWords.add("hat");           // 19
+        allWords.add("food");          // 20
+        for (String word : allWords) {
+            System.out.println("For word: " + word);
+            resArr = fileNIndex.wordSearch(word, true);
+            System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
+        }
     }
 
     @Test
@@ -173,5 +207,26 @@ public class OneFileNeuralIndexTest {
     @Test
     public void testFileNormalization() throws Exception {
         FileLemmatizationUtils.fileLemmNormalization("file2.txt");
+    }
+
+    @Test
+    public void isDoubleBitTest() throws Exception {
+        Assert.assertTrue( OneFileNeuralIndex.isDoubleBitOne(0.99) );
+        Assert.assertTrue( OneFileNeuralIndex.isDoubleBitOne(0.98) );
+        Assert.assertTrue( OneFileNeuralIndex.isDoubleBitOne(0.949) );
+        Assert.assertTrue( OneFileNeuralIndex.isDoubleBitOne(0.91) );
+        Assert.assertTrue( !OneFileNeuralIndex.isDoubleBitOne(0.81) );
+        Assert.assertTrue( OneFileNeuralIndex.isDoubleBitZero(-0.99) );
+        Assert.assertTrue( OneFileNeuralIndex.isDoubleBitZero(-0.96) );
+        Assert.assertTrue( OneFileNeuralIndex.isDoubleBitZero(-0.91) );
+        Assert.assertTrue( !OneFileNeuralIndex.isDoubleBitZero(-0.51) );
+        Assert.assertTrue( OneFileNeuralIndex.isDoubleBitZeroOrOne(0.91) );
+        Assert.assertTrue( OneFileNeuralIndex.isDoubleBitZeroOrOne(-0.989) );
+        Assert.assertTrue( !OneFileNeuralIndex.isDoubleBitZeroOrOne(-0.8) );
+
+        System.out.println(OneFileNeuralIndex.isDoubleBitZeroOrOne(-0.89));
+        System.out.println(OneFileNeuralIndex.isDoubleBitZeroOrOne(0.895));
+        System.out.println(OneFileNeuralIndex.isDoubleBitZeroOrOne(-0.849));
+        System.out.println(OneFileNeuralIndex.isDoubleBitZeroOrOne(0.9));
     }
 }
