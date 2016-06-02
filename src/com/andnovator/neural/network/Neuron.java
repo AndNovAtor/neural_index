@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * Created by novator on 01.11.2015.
  */
 
-public class Neuron<T> {
+public class Neuron {
 
     public static final double LearningRate = 0.01; //TODO: What to do with "constant"?!
 
@@ -45,7 +45,7 @@ public class Neuron<T> {
      * 		- Prerequisites:	The existence of std::vector<Neuron> and NetworkFunction.
      */
 
-    Neuron(List<Neuron<T>> inNeuronsLinkTo, NetworkFunction inNetFunc )
+    Neuron(List<Neuron> inNeuronsLinkTo, NetworkFunction inNetFunc )
     {
 	/*
 	 * 		Net Function is an activation function for neuron
@@ -62,13 +62,13 @@ public class Neuron<T> {
         mSumOfCharges = 0.0;
 
 
-        for (Neuron<T> anInNeuronsLinkTo : inNeuronsLinkTo) {
+        for (Neuron anInNeuronsLinkTo : inNeuronsLinkTo) {
 
             /*
              *		Creating a link, based on Neuron from vector for every neuron in vector
             */
 
-            NeuralLink<T> pLink = new NeuralLink<>(anInNeuronsLinkTo, 0.0);
+            NeuralLink pLink = new NeuralLink(anInNeuronsLinkTo, 0.0);
 
             /*
              *		Newly created neuron will know who is linked to it, by maintaining a vector of links called mLinksToNeurons.
@@ -92,17 +92,17 @@ public class Neuron<T> {
 
     }
 
-    List<NeuralLink<T>>	GetLinksToNeurons( ) { return mLinksToNeurons; }
-    NeuralLink<T> get( int inIndexOfNeuralLink ) { return mLinksToNeurons.get(inIndexOfNeuralLink); }
+    List<NeuralLink>	GetLinksToNeurons( ) { return mLinksToNeurons; }
+    NeuralLink get(int inIndexOfNeuralLink ) { return mLinksToNeurons.get(inIndexOfNeuralLink); }
 
-    void SetLinkToNeuron( NeuralLink<T> inNeuralLink ) { mLinksToNeurons.add( inNeuralLink ); }
+    void SetLinkToNeuron( NeuralLink inNeuralLink ) { mLinksToNeurons.add( inNeuralLink ); }
 
     void Input( double inInputData ) { mSumOfCharges += inInputData; }
     double Fire()
     {
         for(int iLink = 0; iLink < this.GetNumOfLinks(); iLink++){
-            NeuralLink<T> pCurrentLink = mLinksToNeurons.get(iLink);
-            Neuron<T> pCurrentNeuronLinkedTo = pCurrentLink.GetNeuronLinkedTo();
+            NeuralLink pCurrentLink = mLinksToNeurons.get(iLink);
+            Neuron pCurrentNeuronLinkedTo = pCurrentLink.GetNeuronLinkedTo();
 
             final double dWeight = pCurrentLink.GetWeight();
             double	dCharge = mSumOfCharges;
@@ -123,8 +123,8 @@ public class Neuron<T> {
     double Process(double inArg) {return mNetFunc.Process(inArg);}
     double Derivative( ) { return mNetFunc.Derivative(mSumOfCharges); }
 
-    void SetInputLink( NeuralLink<T> inLink ) { mInputLinks.add( inLink ); }
-    List<NeuralLink<T>> GetInputLink( ) { return mInputLinks; }
+    void SetInputLink( NeuralLink inLink ) { mInputLinks.add( inLink ); }
+    List<NeuralLink> GetInputLink( ) { return mInputLinks; }
 
 
 
@@ -138,24 +138,24 @@ public class Neuron<T> {
         */
 
         for(int iNumOfOutLinks = 0; iNumOfOutLinks < mLinksToNeurons.size(); iNumOfOutLinks++ ){
-            NeuralLink<T> pNeuralLink = mLinksToNeurons.get(iNumOfOutLinks);
+            NeuralLink pNeuralLink = mLinksToNeurons.get(iNumOfOutLinks);
             System.out.println("    Link index: "+iNumOfOutLinks);
             System.out.println("      Weight: "+pNeuralLink.GetWeight()+"; Weight correction term: "+pNeuralLink.GetWeightCorrectionTerm());
         }
     }
     protected NetworkFunction mNetFunc;
-    protected List<NeuralLink<T>> mInputLinks = new ArrayList<>();
-    protected List<NeuralLink<T>> mLinksToNeurons = new ArrayList<>();
+    protected List<NeuralLink> mInputLinks = new ArrayList<>();
+    protected List<NeuralLink> mLinksToNeurons = new ArrayList<>();
 
     protected double mSumOfCharges;
 }
 
-class OutputLayerNeuronDecorator<T> extends Neuron<T> {
-    public OutputLayerNeuronDecorator(Neuron<T> inNeuron) { mOutputCharge = 0; mNeuron = inNeuron; }
+class OutputLayerNeuronDecorator extends Neuron {
+    public OutputLayerNeuronDecorator(Neuron inNeuron) { mOutputCharge = 0; mNeuron = inNeuron; }
 
-    public List<NeuralLink<T>>	GetLinksToNeurons( ) { return mNeuron.GetLinksToNeurons( );}
-    public NeuralLink<T>			get( int inIndexOfNeuralLink ) { return ( mNeuron.get( inIndexOfNeuralLink ) );}
-    public void SetLinkToNeuron( NeuralLink<T> inNeuralLink )			{ mNeuron.SetLinkToNeuron( inNeuralLink );}
+    public List<NeuralLink>	GetLinksToNeurons( ) { return mNeuron.GetLinksToNeurons( );}
+    public NeuralLink get(int inIndexOfNeuralLink ) { return ( mNeuron.get( inIndexOfNeuralLink ) );}
+    public void SetLinkToNeuron( NeuralLink inNeuralLink )			{ mNeuron.SetLinkToNeuron( inNeuralLink );}
     public double GetSumOfCharges( ) { return mNeuron.GetSumOfCharges( ); }
 
     public void ResetSumOfCharges( ) { mNeuron.ResetSumOfCharges( ); }
@@ -178,8 +178,8 @@ class OutputLayerNeuronDecorator<T> extends Neuron<T> {
 
     public double Derivative( ) 			{ return mNeuron.Derivative( ); }
 
-    public void SetInputLink( NeuralLink<T> inLink ) { mNeuron.SetInputLink( inLink ); }
-    public List<NeuralLink<T>> GetInputLink( ) 			{ return mNeuron.GetInputLink( ); }
+    public void SetInputLink( NeuralLink inLink ) { mNeuron.SetInputLink( inLink ); }
+    public List<NeuralLink> GetInputLink( ) 			{ return mNeuron.GetInputLink( ); }
 
     public double PerformTrainingProcess(double inTarget) {
         double res;
@@ -193,7 +193,7 @@ class OutputLayerNeuronDecorator<T> extends Neuron<T> {
 	 * 		and update the link with it.
 	*/
         for(int iInputLink = 0; iInputLink < (this.GetInputLink()).size(); iInputLink++){
-            NeuralLink<T> pInputLink = (this.GetInputLink()).get(iInputLink);
+            NeuralLink pInputLink = (this.GetInputLink()).get(iInputLink);
             double Zj = pInputLink.GetLastTranslatedSignal();
             double dWeightCorrectionTerm = Zj*dErrorInformationTerm;
             //std::cout << "dWeightCorrectionTerm: " << dWeightCorrectionTerm << std::endl;
@@ -215,7 +215,7 @@ class OutputLayerNeuronDecorator<T> extends Neuron<T> {
     public void PerformWeightsUpdating()
     {
         for( int iInputLink = 0; iInputLink < (this.GetInputLink()).size(); iInputLink++){
-            NeuralLink<T> pInputLink = (this.GetInputLink()).get(iInputLink);
+            NeuralLink pInputLink = (this.GetInputLink()).get(iInputLink);
 
             pInputLink.UpdateWeight();
             //std::cout<<"";
@@ -224,16 +224,15 @@ class OutputLayerNeuronDecorator<T> extends Neuron<T> {
     public void ShowNeuronState( ) { mNeuron.ShowNeuronState( ); }
 
     protected double mOutputCharge;
-    protected Neuron<T> mNeuron;
+    protected Neuron mNeuron;
 
 }
 
-class HiddenLayerNeuronDecorator<T> extends Neuron<T>
-{
-    HiddenLayerNeuronDecorator( Neuron<T> inNeuron )		{ mNeuron = inNeuron; }
+class HiddenLayerNeuronDecorator<T> extends Neuron {
+    HiddenLayerNeuronDecorator( Neuron inNeuron )		{ mNeuron = inNeuron; }
 
-    List<NeuralLink<T>>	GetLinksToNeurons( ) { return mNeuron.GetLinksToNeurons( ); }
-    void SetLinkToNeuron( NeuralLink<T> inNeuralLink )			{ mNeuron.SetLinkToNeuron( inNeuralLink ); }
+    List<NeuralLink>	GetLinksToNeurons( ) { return mNeuron.GetLinksToNeurons( ); }
+    void SetLinkToNeuron( NeuralLink inNeuralLink )			{ mNeuron.SetLinkToNeuron( inNeuralLink ); }
     double GetSumOfCharges( ) { return mNeuron.GetSumOfCharges( ) ;}
 
     void ResetSumOfCharges( ) {mNeuron.ResetSumOfCharges( ); }
@@ -246,8 +245,8 @@ class HiddenLayerNeuronDecorator<T> extends Neuron<T>
 
         for(int iLink = 0; iLink < this.GetNumOfLinks(); iLink++){
 
-            NeuralLink<T> pCurrentLink = mNeuron.get(iLink);
-            Neuron<T> pCurrentNeuronLinkedTo = pCurrentLink.GetNeuronLinkedTo();
+            NeuralLink pCurrentLink = mNeuron.get(iLink);
+            Neuron pCurrentNeuronLinkedTo = pCurrentLink.GetNeuronLinkedTo();
 
             final double dWeight = mNeuron.get(iLink).GetWeight(); //TODO: And so what about constants? Need "final"?
             double	dCharge = mNeuron.GetSumOfCharges();
@@ -264,15 +263,15 @@ class HiddenLayerNeuronDecorator<T> extends Neuron<T>
         return mNeuron.GetSumOfCharges();
     }
     int GetNumOfLinks( ) { return mNeuron.GetNumOfLinks( ); }
-    NeuralLink<T> get( int inIndexOfNeuralLink ) { return ( mNeuron.get( inIndexOfNeuralLink) ); }
+    NeuralLink get(int inIndexOfNeuralLink ) { return ( mNeuron.get( inIndexOfNeuralLink) ); }
 
     double Process( ) 			{ return mNeuron.Process( ); }
     double Process( double inArg ) { return mNeuron.Process( inArg ); }
 
     double Derivative( ) 			{ return mNeuron.Derivative( ); }
 
-    void SetInputLink( NeuralLink<T> inLink ) { mNeuron.SetInputLink( inLink ); }
-    List<NeuralLink<T>> GetInputLink( ) 			{ return mNeuron.GetInputLink( ); }
+    void SetInputLink( NeuralLink inLink ) { mNeuron.SetInputLink( inLink ); }
+    List<NeuralLink> GetInputLink( ) 			{ return mNeuron.GetInputLink( ); }
 
     double PerformTrainingProcess(double inTarget) {
         /*
@@ -280,7 +279,7 @@ class HiddenLayerNeuronDecorator<T> extends Neuron<T>
         */
         double dDeltaInputs = 0;
         for(int iOutputLink = 0; iOutputLink < (this.GetNumOfLinks()); iOutputLink++){
-            NeuralLink<T> pOutputLink = (this.GetLinksToNeurons()).get(iOutputLink);
+            NeuralLink pOutputLink = (this.GetLinksToNeurons()).get(iOutputLink);
             double dErrorInformationTerm = pOutputLink.GetErrorInFormationTerm();
             double dWeight = pOutputLink.GetWeight();
             dDeltaInputs = dDeltaInputs + (dWeight*dErrorInformationTerm);
@@ -299,7 +298,7 @@ class HiddenLayerNeuronDecorator<T> extends Neuron<T>
          * 		and update the link with it.
         */
         for(int iInputLink = 0; iInputLink < (this.GetInputLink()).size(); iInputLink++){
-            NeuralLink<T> pInputLink = (this.GetInputLink()).get(iInputLink);
+            NeuralLink pInputLink = (this.GetInputLink()).get(iInputLink);
             double Xi = pInputLink.GetLastTranslatedSignal();
             double dWeightCorrectionTerm = Xi*dErrorInformationTermj;
             //std::cout << "dWeightCorrectionTerm: " << dWeightCorrectionTerm << std::endl;
@@ -318,7 +317,7 @@ class HiddenLayerNeuronDecorator<T> extends Neuron<T>
     void PerformWeightsUpdating( )
     {
         for( int iInputLink = 0; iInputLink < (this.GetInputLink()).size(); iInputLink++){
-            NeuralLink<T> pInputLink = (this.GetInputLink()).get(iInputLink);
+            NeuralLink pInputLink = (this.GetInputLink()).get(iInputLink);
 
             pInputLink.UpdateWeight();
             //std::cout<<"";
@@ -326,6 +325,6 @@ class HiddenLayerNeuronDecorator<T> extends Neuron<T>
     }
 
     void ShowNeuronState( ) { mNeuron.ShowNeuronState( ); }
-    protected Neuron<T> mNeuron;
+    protected Neuron mNeuron;
 
 }

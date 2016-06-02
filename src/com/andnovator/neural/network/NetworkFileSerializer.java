@@ -30,7 +30,7 @@ public class NetworkFileSerializer {
     public String getFileName() { return fileName; }
     public void setFileName(String fileName) { this.fileName = fileName; }
 
-    public <T> void saveNetwork(NeuralNetwork<T> nn) throws IOException {
+    public void saveNetwork(NeuralNetwork nn) throws IOException {
         List<List<Double>> netWeights = nn.exportNetworkWeights();
         try (PrintWriter writer = new PrintWriter(fileName, "utf-8")) {
             writer.println("# NN config (inputs, outputs, hiddenLayersNum, neurons in every hiddenLayers, minMSE, maxTrainItNum)");
@@ -50,7 +50,7 @@ public class NetworkFileSerializer {
         }
     }
 
-    public <T> NeuralNetwork<T> loadNetwork() throws IOException, ParseException {
+    public <T> NeuralNetwork loadNetwork() throws IOException, ParseException {
         AtomicInteger lineNumber = new AtomicInteger(0);
         int nextField = 0;
         try(BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
@@ -62,7 +62,7 @@ public class NetworkFileSerializer {
             double minMSE = Double.valueOf(configLine[nextField++]);
             int maxTrainItNum = Integer.valueOf(configLine[nextField++]);
 
-            NeuralNetwork<T> nn = new NeuralNetwork<>(inputsNum, outputsNum, hiddenLayersNum, hiddenLayersSize);
+            NeuralNetwork nn = new NeuralNetwork(inputsNum, outputsNum, hiddenLayersNum, hiddenLayersSize);
 
             String[] biasWeightsLine = getNextLine(reader, lineNumber).split(separator);
             List<Double> biasWeights = Arrays.stream(biasWeightsLine)
@@ -104,7 +104,7 @@ public class NetworkFileSerializer {
         return line;
     }
 
-    public <T> void seralizeNetwork(NeuralNetwork<T> nn) throws IOException {
+    public void seralizeNetwork(NeuralNetwork nn) throws IOException {
         List<List<Double>> netWeights = nn.exportNetworkWeights();
         try (ObjectOutputStream ostream = new ObjectOutputStream(new FileOutputStream(fileName))) {
             ostream.writeInt(nn.getInputsNum());
@@ -119,7 +119,7 @@ public class NetworkFileSerializer {
 
     }
 
-    public <T> NeuralNetwork<T> deserializeNetwork() throws IOException, ClassNotFoundException {
+    public NeuralNetwork deserializeNetwork() throws IOException, ClassNotFoundException {
         try (ObjectInputStream istream = new ObjectInputStream(new FileInputStream(fileName))) {
             int inputsNum = istream.readInt();
             int outputsNum = istream.readInt();
@@ -127,7 +127,7 @@ public class NetworkFileSerializer {
             int hiddenLayersSize = istream.readInt();
             double minMSE = istream.readDouble();
             int maxTrainItNum = istream.readInt();
-            NeuralNetwork<T> nn  = new NeuralNetwork<>(inputsNum, outputsNum, hiddenLayersNum, hiddenLayersSize);
+            NeuralNetwork nn  = new NeuralNetwork(inputsNum, outputsNum, hiddenLayersNum, hiddenLayersSize);
             nn.setMinMSE(minMSE);
             nn.setMaxTrainItNum(maxTrainItNum);
             @SuppressWarnings("unchecked")
@@ -140,12 +140,12 @@ public class NetworkFileSerializer {
     }
 
     static public void convertNNTxtToSerBin(String txtFileName, String txtSeparatoer, String serFileName) throws Exception {
-        NeuralNetwork<Double> nn = new NetworkFileSerializer(txtFileName, txtSeparatoer).loadNetwork();
+        NeuralNetwork nn = new NetworkFileSerializer(txtFileName, txtSeparatoer).loadNetwork();
         new NetworkFileSerializer(serFileName).seralizeNetwork(nn);
     }
 
     static public void convertNNSerBinToTxt(String serFileName, String txtFileName, String txtSeparatoer) throws Exception {
-        NeuralNetwork<Double> nn = new NetworkFileSerializer(serFileName).deserializeNetwork();
+        NeuralNetwork nn = new NetworkFileSerializer(serFileName).deserializeNetwork();
         new NetworkFileSerializer(txtFileName, txtSeparatoer).saveNetwork(nn);
     }
 }

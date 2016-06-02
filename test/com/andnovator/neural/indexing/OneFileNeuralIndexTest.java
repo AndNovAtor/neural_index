@@ -28,10 +28,11 @@ public class OneFileNeuralIndexTest {
 
     @Test
     public void indexOneFileTest() throws Exception {
-//        DocumentWords documentWords = IndexingFileLoader.loadDocument("file.txt");
+        String filePath = "file3.txt";
+//        DocumentWords documentWords = IndexingFileLoader.loadDocument(filePath);
 
         Set<String> allFilesWords = new HashSet<>();
-        Map<String, PosFreqPair> wordsMapOneFile = IndexingFileLoader.loadFile("file.txt");
+        Map<String, PosFreqPair> wordsMapOneFile = IndexingFileLoader.loadFile(filePath);
         allFilesWords.addAll(wordsMapOneFile.keySet());
         //Some static add other words
         allFilesWords.add("nebulous");      // 1
@@ -68,7 +69,7 @@ public class OneFileNeuralIndexTest {
             System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
         }
 
-        new NetworkFileSerializer(defaultSerFileName+"_"+ SDF_YMD_HMS.format(new Date()) +defaultSerFileExt).seralizeNetwork(fileNIndex.getNeuroIndexNetwork());
+        new NetworkFileSerializer(defaultSerFileName+"_"+ Paths.get(filePath).getFileName() +defaultSerFileExt).seralizeNetwork(fileNIndex.getNeuroIndexNetwork());
 //        new NetworkFileSerializer(defaultFilePath).saveNetwork(fileNIndex.getNeuroIndexNetwork());
 //        return new Pair<>(fileNIndex.getNeuroIndexNetwork(), fileNIndex.wordSearchNetResponce(allWords.get(18)));
     }
@@ -81,9 +82,9 @@ public class OneFileNeuralIndexTest {
         List<String> allWords = new ArrayList<>();
         allWords.add("nebulous");      // 1
         allWords.add("scare");         // 2
-        allWords.add("rhythm");        // 3
+        allWords.add("file");        // 3
         allWords.add("brief");         // 4
-        allWords.add("flash");         // 5
+        allWords.add("be");         // 5
         allWords.add("evanescent");    // 6
         allWords.add("hum");           // 7
         allWords.add("sloppy");        // 8
@@ -91,7 +92,7 @@ public class OneFileNeuralIndexTest {
         allWords.add("jumbled");       // 10
         allWords.add("tame");          // 11
         allWords.add("heavenly");      // 12
-        allWords.add("duck");          // 13
+        allWords.add("human");          // 13
         allWords.add("makeshift");     // 14
         allWords.add("intend");        // 15
         allWords.add("distance");      // 16

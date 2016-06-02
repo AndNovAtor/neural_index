@@ -3,8 +3,7 @@ package com.andnovator.neural.network;
 /**
  Created by novator on 01.11.2015.
  */
-class NeuralLink<T>
-{
+class NeuralLink {
     public NeuralLink() {
         mWeightToNeuron = 0.0;
         mNeuronLinkedTo = null;
@@ -12,22 +11,22 @@ class NeuralLink<T>
         mErrorInformationTerm =0;
         mLastTranslatedSignal = 0;
     }
-    public NeuralLink( Neuron<T> inNeuronLinkedTo, double inWeightToNeuron) {
+    public NeuralLink(Neuron inNeuronLinkedTo, double inWeightToNeuron) {
         mWeightToNeuron = inWeightToNeuron;
         mNeuronLinkedTo = inNeuronLinkedTo;
         mWeightCorrectionTerm = 0;
         mErrorInformationTerm = 0;
         mLastTranslatedSignal = 0;
     }
-    public NeuralLink( Neuron<T> inNeuronLinkedTo) {
+    public NeuralLink( Neuron inNeuronLinkedTo) {
        this(inNeuronLinkedTo, 0.0);
     }
     
     void SetWeight(double inWeight) {mWeightToNeuron = inWeight;}
     double GetWeight() {return mWeightToNeuron;}
 
-    void SetNeuronLinkedTo(Neuron<T> inNeuronLinkedTo) {mNeuronLinkedTo = inNeuronLinkedTo;}
-    Neuron<T> GetNeuronLinkedTo() {return mNeuronLinkedTo;}
+    void SetNeuronLinkedTo(Neuron inNeuronLinkedTo) {mNeuronLinkedTo = inNeuronLinkedTo;}
+    Neuron GetNeuronLinkedTo() {return mNeuronLinkedTo;}
 
     void SetWeightCorrectionTerm( double inWeightCorrectionTerm ) {mWeightCorrectionTerm = inWeightCorrectionTerm;}
     double GetWeightCorrectionTerm() {return mWeightCorrectionTerm;}
@@ -41,7 +40,7 @@ class NeuralLink<T>
     double GetLastTranslatedSignal() {return mLastTranslatedSignal;}
     
     protected double mWeightToNeuron;
-    protected Neuron<T> mNeuronLinkedTo;
+    protected Neuron mNeuronLinkedTo;
     protected double mWeightCorrectionTerm;
     protected double mErrorInformationTerm;
     protected double mLastTranslatedSignal;

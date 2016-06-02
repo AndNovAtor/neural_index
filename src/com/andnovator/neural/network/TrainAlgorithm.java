@@ -7,20 +7,19 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Created by novator on 01.11.2015.
  */
-public interface TrainAlgorithm<T> {  //TODO: Is it OK, if it's interface?
-    double Train(List<T> inData, List<T> inTarget); // +down to_do
-    void WeightsInitialization();  // TODO: "=0" in C++ - why near void?? (if it's interface, this is no matter)
+public interface TrainAlgorithm {  //TODO: Is it OK, if it's interface?
+    double Train(List<Double> inData, List<Double> inTarget); // +down to_do
+    void WeightsInitialization();
     default double getMaxAbsWeight() {
         return 1.0;
     }
 }
 
 
-class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
-{
+class Backpropagation implements TrainAlgorithm   {
 
-    Backpropagation(NeuralNetwork<T> inNeuralNetwork) { mNeuralNetwork = inNeuralNetwork; }
-    public double Train(List<T> inData, List<T> inTarget) {
+    Backpropagation(NeuralNetwork inNeuralNetwork) { mNeuralNetwork = inNeuralNetwork; }
+    public double Train(List<Double> inData, List<Double> inTarget) {
         /*
 	 * 		Check incoming data
 	*/
@@ -40,8 +39,7 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
 
             for(int indexOfData = 0; indexOfData < mNeuralNetwork.inputsNum; indexOfData++){
                 //System.out.println("input" << indexOfData << ": " << inData.get(indexOfData));
-                // TODO: !!!!!!  Hack with casting!!!!!!!!!!!!!!!!!!!!!!!!!!
-                mNeuralNetwork.GetInputLayer().get(indexOfData).Input((Double)inData.get(indexOfData));
+                mNeuralNetwork.GetInputLayer().get(indexOfData).Input(inData.get(indexOfData));
             }
 
 
@@ -66,11 +64,12 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
 		*/
 
 
-            List<Double> netResponseYk = new ArrayList<>();
+            //List<Double> netResponseYk = new ArrayList<>();
             for(int indexOfOutputElements = 0; indexOfOutputElements < mNeuralNetwork.outputsNum; indexOfOutputElements++){
 
-                double Yk = mNeuralNetwork.GetOutputLayer().get(indexOfOutputElements).Fire();
-                netResponseYk.add(Yk);
+                mNeuralNetwork.GetOutputLayer().get(indexOfOutputElements).Fire();
+                //double Yk = mNeuralNetwork.GetOutputLayer().get(indexOfOutputElements).Fire();
+                //netResponseYk.add(Yk);
 
             }
 
@@ -80,7 +79,7 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
 		*/
 
             for(int indexOfData = 0; indexOfData < mNeuralNetwork.outputsNum; indexOfData++){
-                result = mNeuralNetwork.GetOutputLayer().get(indexOfData).PerformTrainingProcess((Double)inTarget.get(indexOfData)); //TODO Casting!!!
+                result = mNeuralNetwork.GetOutputLayer().get(indexOfData).PerformTrainingProcess(inTarget.get(indexOfData));
                 mNeuralNetwork.addMSE(result);
             }
 
@@ -128,9 +127,9 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
 
         for(int layerInd = 0; layerInd < mNeuralNetwork.size(); layerInd++){
             for(int neuronInd = 0; neuronInd < mNeuralNetwork.GetLayer(layerInd).size(); neuronInd++){
-                Neuron<T> currentNeuron = mNeuralNetwork.GetLayer(layerInd).get(neuronInd);
+                Neuron currentNeuron = mNeuralNetwork.GetLayer(layerInd).get(neuronInd);
                 for(int linkInd = 0; linkInd < currentNeuron.GetNumOfLinks(); linkInd++){
-                    NeuralLink<T> currentNeuralLink = currentNeuron.get(linkInd);
+                    NeuralLink currentNeuralLink = currentNeuron.get(linkInd);
                     double pseudoRandWeight = ThreadLocalRandom.current().nextDouble(-0.5,0.5);
                     currentNeuralLink.SetWeight(pseudoRandWeight);
                     //System.out.println("layerInd: " << layerInd << ", neuronInd: " << neuronInd << ", linkInd: " << linkInd << ", Weight: " << currentNeuralLink.GetWeight());
@@ -144,9 +143,9 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
             double dSquaredNorm = 0;
 
             for(int neuronInputInd = 0; neuronInputInd < mNeuralNetwork.GetLayer(0).size(); neuronInputInd++){
-                Neuron<T> currentInputNeuron = mNeuralNetwork.GetLayer(0).get(neuronInputInd);
+                Neuron currentInputNeuron = mNeuralNetwork.GetLayer(0).get(neuronInputInd);
 
-                NeuralLink<T> currentNeuralLink = currentInputNeuron.get(neuronHiddenInd);
+                NeuralLink currentNeuralLink = currentInputNeuron.get(neuronHiddenInd);
 
                 dSquaredNorm +=Math.pow(currentNeuralLink.GetWeight(),2.0);
             }
@@ -154,9 +153,9 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
             double dNorm = Math.sqrt(dSquaredNorm);
 
             for(int neuronInputInd = 0; neuronInputInd < mNeuralNetwork.GetLayer(0).size(); neuronInputInd++){
-                Neuron<T> currentInputNeuron = mNeuralNetwork.GetLayer(0).get(neuronInputInd);
+                Neuron currentInputNeuron = mNeuralNetwork.GetLayer(0).get(neuronInputInd);
 
-                NeuralLink<T> currentNeuralLink = currentInputNeuron.get(neuronHiddenInd);
+                NeuralLink currentNeuralLink = currentInputNeuron.get(neuronHiddenInd);
 
                 double dNewWeight = ( dScaleFactor * ( currentNeuralLink.GetWeight() ) ) / dNorm;
                 currentNeuralLink.SetWeight(dNewWeight);
@@ -166,9 +165,9 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
 
         for(int layerInd = 0; layerInd < mNeuralNetwork.size() - 1; layerInd++){
 
-            Neuron<T> Bias = mNeuralNetwork.GetBiasLayer().get(layerInd);
+            Neuron Bias = mNeuralNetwork.GetBiasLayer().get(layerInd);
             for(int linkInd = 0; linkInd < Bias.GetNumOfLinks(); linkInd++){
-                NeuralLink<T> currentNeuralLink = Bias.get(linkInd);
+                NeuralLink currentNeuralLink = Bias.get(linkInd);
                 double pseudoRandWeight = ThreadLocalRandom.current().nextDouble(-dScaleFactor, dScaleFactor);
                 //float pseudoRandWeight = 0;
                 currentNeuralLink.SetWeight(pseudoRandWeight);
@@ -189,9 +188,9 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
 
         for(int layerInd = 0; layerInd < mNeuralNetwork.size(); layerInd++){
             for(int neuronInd = 0; neuronInd < mNeuralNetwork.GetLayer(layerInd).size(); neuronInd++){
-                Neuron<T> currentNeuron = mNeuralNetwork.GetLayer(layerInd).get(neuronInd);
+                Neuron currentNeuron = mNeuralNetwork.GetLayer(layerInd).get(neuronInd);
                 for(int linkInd = 0; linkInd < currentNeuron.GetNumOfLinks(); linkInd++){
-                    NeuralLink<T> currentNeuralLink = currentNeuron.get(linkInd);
+                    NeuralLink currentNeuralLink = currentNeuron.get(linkInd);
                     float pseudoRandWeight = -0.5f + ThreadLocalRandom.current().nextFloat(); // rand(-0.5..0.5)
                     //float pseudoRandWeight = 0;
                     currentNeuralLink.SetWeight(pseudoRandWeight);
@@ -203,9 +202,9 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
         }
         for(int layerInd = 0; layerInd < mNeuralNetwork.size() - 1; layerInd++){
 
-            Neuron<T> Bias = mNeuralNetwork.GetBiasLayer().get(layerInd);
+            Neuron Bias = mNeuralNetwork.GetBiasLayer().get(layerInd);
             for(int linkInd = 0; linkInd < Bias.GetNumOfLinks(); linkInd++){
-                NeuralLink<T> currentNeuralLink = Bias.get(linkInd);
+                NeuralLink currentNeuralLink = Bias.get(linkInd);
                 float pseudoRandWeight = -0.5f + ThreadLocalRandom.current().nextFloat();
                 //float pseudoRandWeight = 0;
                 currentNeuralLink.SetWeight(pseudoRandWeight);
@@ -215,18 +214,17 @@ class Backpropagation<T> implements TrainAlgorithm<T>  // TODO:
             }
         }
     }
-    protected NeuralNetwork<T> mNeuralNetwork;
+    protected NeuralNetwork mNeuralNetwork;
 }
 
 
-class Genetic<T> implements TrainAlgorithm<T>
-{
-    Genetic(NeuralNetwork<T> inNeuralNetwork) {}
-    public double Train(List<T> inData, List<T> inTarget) {return 0;}
+class Genetic implements TrainAlgorithm {
+    Genetic(NeuralNetwork inNeuralNetwork) {}
+    public double Train(List<Double> inData, List<Double> inTarget) {return 0;}
     public void WeightsInitialization() { }
 
     //protected void NguyenWidrowWeightsInitialization() {}
     //protected void CommonInitialization() {}
-    protected  NeuralNetwork<T> mNeuralNetwork;
+    protected  NeuralNetwork mNeuralNetwork;
 
 }

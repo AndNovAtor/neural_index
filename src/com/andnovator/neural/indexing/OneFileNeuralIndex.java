@@ -2,7 +2,6 @@ package com.andnovator.neural.indexing;
 
 import com.andnovator.neural.network.NetworkFileSerializer;
 import com.andnovator.neural.network.NeuralNetwork;
-import com.andnovator.utils.MathUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,7 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * Created by novator on 03.05.2016.
  */
 public class OneFileNeuralIndex {
-    private NeuralNetwork<Double> neuroIndexNetwork;
+    private NeuralNetwork neuroIndexNetwork;
     private int wordMaxLength = 15;
     static private final int bitsForChar = 8;
     private int inputsNum = wordMaxLength * bitsForChar;
@@ -28,11 +27,11 @@ public class OneFileNeuralIndex {
     public OneFileNeuralIndex() {
         neuroIndexNetwork = null;
     }
-    public OneFileNeuralIndex(NeuralNetwork<Double> neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
+    public OneFileNeuralIndex(NeuralNetwork neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
         this.neuroIndexNetwork = neuroIndexNetwork;
         updateNetworkParams(posBitsNum, freqBitsNum);
     }
-    private void setNINetwork(NeuralNetwork<Double> neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
+    private void setNINetwork(NeuralNetwork neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
         this.neuroIndexNetwork = neuroIndexNetwork;
         updateNetworkParams(posBitsNum, freqBitsNum);
     }
@@ -47,7 +46,7 @@ public class OneFileNeuralIndex {
 
     private void createNINetwork(int maxWordLength) {
         setMaxWordLength(maxWordLength);
-        neuroIndexNetwork = new NeuralNetwork<>(inputsNum,outputBitsNum,3,inputsNum+8);
+        neuroIndexNetwork = new NeuralNetwork(inputsNum,outputBitsNum,3,inputsNum+8);
         neuroIndexNetwork.setMinMSE(defaultNetworkMinMSE);
     }
     private void createNINetwork(int maxWordLength, double minMSE) {
@@ -66,8 +65,8 @@ public class OneFileNeuralIndex {
         inputsNum = wordMaxLength * bitsForChar;
     }
 
-    public NeuralNetwork<Double> getNeuroIndexNetwork() { return neuroIndexNetwork; }
-    void setNeuroIndexNetwork(NeuralNetwork<Double> neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
+    public NeuralNetwork getNeuroIndexNetwork() { return neuroIndexNetwork; }
+    void setNeuroIndexNetwork(NeuralNetwork neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
         this.neuroIndexNetwork = neuroIndexNetwork;
         updateNetworkParams(posBitsNum, freqBitsNum);
     }

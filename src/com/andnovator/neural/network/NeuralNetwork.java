@@ -31,7 +31,7 @@ import static java.util.stream.Collectors.toList;
  * Afterwards u can obtain the net response by feeding the net with data;
  */
 
-public class NeuralNetwork<T> {
+public class NeuralNetwork {
     /**
      * A Neural Network constructor.
      * - Description:    A template constructor. T is a data type, all the nodes will operate with. Create a neural network by providing it with:
@@ -64,16 +64,16 @@ public class NeuralNetwork<T> {
 		/*
 		 *		At least two layers require - input and output;
 		*/
-            List<Neuron<T>> outputLayer = new ArrayList<>();
-            List<Neuron<T>> inputLayer = new ArrayList<>();
+            List<Neuron> outputLayer = new ArrayList<>();
+            List<Neuron> inputLayer = new ArrayList<>();
 
 		/*
 		 *		This block of strcmps decides what training algorithm and neuron factory we should use as well as what
 		 *		network function every node will have.
 		*/
             if (inTypeOfNeuralNetwork.equals("MultiLayerPerceptron")) {
-                mNeuronFactory = new PerceptronNeuronFactory<>();
-                mTrainingAlgoritm = new Backpropagation<>(this);
+                mNeuronFactory = new PerceptronNeuronFactory();
+                mTrainingAlgoritm = new Backpropagation(this);
                 OutputNeuronsFunc = new BipolarSigmoid();
 //                OutputNeuronsFunc = new DecimalPlusSigmoid();
                 InputNeuronsFunc = new Linear();
@@ -90,9 +90,9 @@ public class NeuralNetwork<T> {
 		 * 		Hidden layers creation
 		*/
             for (int i = 0; i < inNumOfHiddenLayers; i++) {
-                List<Neuron<T>> HiddenLayer = new ArrayList<>();
+                List<Neuron> HiddenLayer = new ArrayList<>();
                 for (int j = 0; j < inNumOfNeuronsInHiddenLayers; j++) {
-                    Neuron<T> hidden = mNeuronFactory.CreateHiddenNeuron(mLayers.get(0), OutputNeuronsFunc);
+                    Neuron hidden = mNeuronFactory.CreateHiddenNeuron(mLayers.get(0), OutputNeuronsFunc);
                     HiddenLayer.add(hidden);
                 }
                 mBiasLayer.add(0, mNeuronFactory.CreateInputNeuron(mLayers.get(0), InputNeuronsFunc));
@@ -134,7 +134,7 @@ public class NeuralNetwork<T> {
      *                 - the data and targets has to be in the appropriate order u want the network to learn.
      */
 
-    public boolean Train(List<List<T>> inData, List<List<T>> inTarget) {
+    public boolean Train(List<List<Double>> inData, List<List<Double>> inTarget) {
         int iIteration = 0;
         while (true) {
             ++iIteration;
@@ -170,7 +170,7 @@ public class NeuralNetwork<T> {
      * @param inData - a List data to feed with.
      */
 
-    public List<Double> GetNetResponse(List<T> inData, boolean printResults) {
+    public List<Double> GetNetResponse(List<Double> inData, boolean printResults) {
         List<Double> netResponse = new ArrayList<>();
         if (inData.size() != inputsNum) {
             System.out.println("Input data dimensions are wrong, expected: " + inputsNum + " elements");
@@ -178,7 +178,7 @@ public class NeuralNetwork<T> {
             return netResponse;
         } else {
             for (int indexOfData = 0; indexOfData < this.GetInputLayer().size(); indexOfData++) {
-                this.GetInputLayer().get(indexOfData).Input((Double) inData.get(indexOfData)); // TODO: (Double) - it's "cycle"!! What to do with <T> (there'sg Input(double))
+                this.GetInputLayer().get(indexOfData).Input(inData.get(indexOfData));
             }
 
             for (int numOfLayers = 0; numOfLayers < mLayers.size() - 1; numOfLayers++) {
@@ -214,7 +214,7 @@ public class NeuralNetwork<T> {
         }
     }
 
-    public List<Double> GetNetResponse(List<T> inData) {
+    public List<Double> GetNetResponse(List<Double> inData) {
         return this.GetNetResponse(inData, false);
     }
 
@@ -227,7 +227,7 @@ public class NeuralNetwork<T> {
      * @param inTrainingAlgorithm - an existence of already created object  of type TrainAlgorithm.
      */
 
-    void SetAlgorithm(TrainAlgorithm<T> inTrainingAlgorithm) {
+    void SetAlgorithm(TrainAlgorithm inTrainingAlgorithm) {
         mTrainingAlgoritm = inTrainingAlgorithm;
     }
     //void SetAlgorithm( int par = 0 )    { mTrainingAlgoritm = (par == 0) ? (new Backpropagation<T>(this)) : (new Genetic<T>(this)); }
@@ -241,7 +241,7 @@ public class NeuralNetwork<T> {
      * @param inNeuronFactory - an existence of already created object  of type NeuronFactory.
      */
 
-    void SetNeuronFactory(NeuronFactory<T> inNeuronFactory) {
+    void SetNeuronFactory(NeuronFactory inNeuronFactory) {
         mNeuronFactory = inNeuronFactory;
     }
 
@@ -300,7 +300,7 @@ public class NeuralNetwork<T> {
      * @param inInd -  an integer index of layer.
      */
 
-    List<Neuron<T>> GetLayer(int inInd) {
+    List<Neuron> GetLayer(int inInd) {
         return mLayers.get(inInd);
     }
 
@@ -322,7 +322,7 @@ public class NeuralNetwork<T> {
      * - Prerequisites:  None.
      */
 
-    protected List<Neuron<T>> GetOutputLayer() {
+    protected List<Neuron> GetOutputLayer() {
         return mLayers.get(mLayers.size()-1);
     }
 
@@ -333,7 +333,7 @@ public class NeuralNetwork<T> {
      * - Prerequisites:  None.
      */
 
-    protected List<Neuron<T>> GetInputLayer() {
+    protected List<Neuron> GetInputLayer() {
         return mLayers.get(0);
     }
 
@@ -344,7 +344,7 @@ public class NeuralNetwork<T> {
      * - Prerequisites:  None.
      */
 
-    protected List<Neuron<T>> GetBiasLayer() {
+    protected List<Neuron> GetBiasLayer() {
         return mBiasLayer;
     }
 
@@ -356,7 +356,7 @@ public class NeuralNetwork<T> {
      */
 
     protected void UpdateWeights() {
-        for (List<Neuron<T>> mLayer : mLayers) {
+        for (List<Neuron> mLayer : mLayers) {
             mLayer.forEach(Neuron::PerformWeightsUpdating);
         }
     }
@@ -369,7 +369,7 @@ public class NeuralNetwork<T> {
      */
 
     protected void ResetCharges() {
-        for (List<Neuron<T>> mLayer : mLayers) {
+        for (List<Neuron> mLayer : mLayers) {
             mLayer.forEach(Neuron::ResetSumOfCharges);
         }
         for (int i = 0; i < mLayers.size() - 1; i++) {
@@ -412,10 +412,10 @@ public class NeuralNetwork<T> {
         mMeanSquaredError = 0;
     }
 
-    NeuronFactory<T> mNeuronFactory;       /*!< Member, which is responsible for creating neurons @see SetNeuronFactory */
-    TrainAlgorithm<T> mTrainingAlgoritm;      /*!< Member, which is responsible for the way the network will trained @see SetAlgorithm */
-    List<List<Neuron<T>>> mLayers = new ArrayList<>();   /*!< Inner representation of neural networks */
-    List<Neuron<T>> mBiasLayer = new ArrayList<>();          /*!< Container for biases */
+    NeuronFactory mNeuronFactory;       /*!< Member, which is responsible for creating neurons @see SetNeuronFactory */
+    TrainAlgorithm mTrainingAlgoritm;      /*!< Member, which is responsible for the way the network will trained @see SetAlgorithm */
+    List<List<Neuron>> mLayers = new ArrayList<>();   /*!< Inner representation of neural networks */
+    List<Neuron> mBiasLayer = new ArrayList<>();          /*!< Container for biases */
 
     public int getInputsNum() { return inputsNum; }
     public int getOutputsNum() { return outputsNum; }
@@ -446,7 +446,7 @@ public class NeuralNetwork<T> {
         return Arrays.asList(biasLinks.collect(toList()), otherNeuronsLinks.collect(toList()));
     }
 
-    private Stream<Double> exportNeuronWeights(Neuron<T> n) {
+    private Stream<Double> exportNeuronWeights(Neuron n) {
         return n.GetLinksToNeurons().stream()
                 .map(NeuralLink::GetWeight);
     }
@@ -486,9 +486,9 @@ public class NeuralNetwork<T> {
                        )
         ));
     }
-    public static<T> NeuralNetwork<T> loadNetwork(List<Double> biasesWeights, List<Double> simpleNeuronWeights, int inputs, int outputs,
-                                                    int hiddenLayerNum, int neuronsInHiddenL) {
-        NeuralNetwork<T> neuralNetwork = new NeuralNetwork<>(inputs, outputs, hiddenLayerNum, neuronsInHiddenL);
+    public static NeuralNetwork loadNetwork(List<Double> biasesWeights, List<Double> simpleNeuronWeights, int inputs, int outputs,
+                                               int hiddenLayerNum, int neuronsInHiddenL) {
+        NeuralNetwork neuralNetwork = new NeuralNetwork(inputs, outputs, hiddenLayerNum, neuronsInHiddenL);
         neuralNetwork.importNetworkWeights(biasesWeights, simpleNeuronWeights);
         return neuralNetwork;
     }

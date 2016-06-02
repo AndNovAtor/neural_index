@@ -1,9 +1,7 @@
 package com.andnovator.neural.indexing;
 
-import com.andnovator.neural.network.NetworkFileSerializer;
 import com.andnovator.neural.network.NeuralNetwork;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +9,7 @@ import java.util.List;
  * Created by novator on 16.05.2016.
  */
 public class FilesIndex {
-    NeuralNetwork<Double> filesIndexNN = null;
+    NeuralNetwork filesIndexNN = null;
     List<OneFileNeuralIndex> fileIndexNILst = new ArrayList<>();
     private int wordMaxLength = 20;
     static private final int bitsForChar = 8;
@@ -26,11 +24,11 @@ public class FilesIndex {
     public FilesIndex() {
         filesIndexNN = null;
     }
-    public FilesIndex(NeuralNetwork<Double> filesIndexNN) {
+    public FilesIndex(NeuralNetwork filesIndexNN) {
         this.filesIndexNN = filesIndexNN;
         updateNetworkParams();
     }
-    private void setNINetwork(NeuralNetwork<Double> neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
+    private void setNINetwork(NeuralNetwork neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
         this.filesIndexNN = neuroIndexNetwork;
         updateNetworkParams();
     }
@@ -41,7 +39,7 @@ public class FilesIndex {
 
     private void createNINetwork(int maxWordLength) {
         setMaxWordLength(maxWordLength);
-        filesIndexNN = new NeuralNetwork<>(inputsNum,outputBitsNum,3,inputsNum+8);
+        filesIndexNN = new NeuralNetwork(inputsNum,outputBitsNum,3,inputsNum+8);
         filesIndexNN.setMinMSE(defaultNetworkMinMSE);
     }
     private void createNINetwork(int maxWordLength, double minMSE) {
@@ -59,8 +57,8 @@ public class FilesIndex {
         inputsNum = wordMaxLength * bitsForChar;
     }
 
-    public NeuralNetwork<Double> getNeuroIndexNetwork() { return filesIndexNN; }
-    void setNeuroIndexNetwork(NeuralNetwork<Double> neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
+    public NeuralNetwork getNeuroIndexNetwork() { return filesIndexNN; }
+    void setNeuroIndexNetwork(NeuralNetwork neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
         this.filesIndexNN = neuroIndexNetwork;
         updateNetworkParams();
     }

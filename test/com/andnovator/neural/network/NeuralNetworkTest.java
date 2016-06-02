@@ -71,7 +71,7 @@ public class NeuralNetworkTest {
         //trainingSample.add(ts4);
         //trainingSample.add(ts5);
 
-        NeuralNetwork<Double> NN = new NeuralNetwork<>(2,1,5,4);
+        NeuralNetwork NN = new NeuralNetwork(2,1,5,4);
         NN.setMinMSE(0.0001);
         NN.setMaxTrainItNum(200000);
         NN.Train(DataToFeedNN,trainingSample);
@@ -139,7 +139,7 @@ public class NeuralNetworkTest {
         trainingSample.add(ts2);
         trainingSample.add(ts3);
         trainingSample.add(ts4);
-        NeuralNetwork<Double> NN = new NeuralNetwork<>(3,1,4,6);
+        NeuralNetwork NN = new NeuralNetwork(3,1,4,6);
         NN.setMinMSE(0.000001);
         NN.Train(DataToFeedNN,trainingSample);
 
@@ -180,7 +180,7 @@ public class NeuralNetworkTest {
             trOutputDatas.add(outputs);
         }
 
-        NeuralNetwork<Double> NN = new NeuralNetwork<>(inputNeuronNum,1,4,inputNeuronNum*2);
+        NeuralNetwork NN = new NeuralNetwork(inputNeuronNum,1,4,inputNeuronNum*2);
         NN.setMinMSE(0.0001);
         NN.setMaxTrainItNum(200000);
         NN.Train(trInputDatas,trOutputDatas);
