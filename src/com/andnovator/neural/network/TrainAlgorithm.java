@@ -1,5 +1,6 @@
 package com.andnovator.neural.network;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
@@ -62,16 +63,13 @@ class Backpropagation implements TrainAlgorithm   {
 		 * 		Step 5. Each output unit applies its activation function to compute its output
 		 * 		signal.
 		*/
-
-
-            //List<Double> netResponseYk = new ArrayList<>();
+            mNeuralNetwork.GetOutputLayer().forEach(Neuron::Fire);
+            /*List<Double> netResponseYk = new ArrayList<>();
             for(int indexOfOutputElements = 0; indexOfOutputElements < mNeuralNetwork.outputsNum; indexOfOutputElements++){
-
                 mNeuralNetwork.GetOutputLayer().get(indexOfOutputElements).Fire();
-                //double Yk = mNeuralNetwork.GetOutputLayer().get(indexOfOutputElements).Fire();
-                //netResponseYk.add(Yk);
-
-            }
+                double Yk = mNeuralNetwork.GetOutputLayer().get(indexOfOutputElements).Fire();
+                netResponseYk.add(Yk);
+            }*/
 
 		/*
 		 * 		Step 6. Backpropagation of error
@@ -82,21 +80,16 @@ class Backpropagation implements TrainAlgorithm   {
                 result = mNeuralNetwork.GetOutputLayer().get(indexOfData).PerformTrainingProcess(inTarget.get(indexOfData));
                 mNeuralNetwork.addMSE(result);
             }
-
-
 		/*
 		 *		FIXME: Net should perform training process not only for last layer and layer before last, but also for any
 		 *		layers except input one, so fix it DUDE!
 		*/
-
             for(int iIndOfLayer = mNeuralNetwork.size() - 2; iIndOfLayer > 0 ; iIndOfLayer--){
                 for(int indexOfNeuron = 0; indexOfNeuron < mNeuralNetwork.GetLayer(iIndOfLayer).size(); indexOfNeuron++){
                     mNeuralNetwork.GetLayer(iIndOfLayer).get(indexOfNeuron).PerformTrainingProcess(0);
                 }
             }
             mNeuralNetwork.UpdateWeights();
-
-
             mNeuralNetwork.ResetCharges();
             return result;
         }
@@ -146,7 +139,6 @@ class Backpropagation implements TrainAlgorithm   {
                 Neuron currentInputNeuron = mNeuralNetwork.GetLayer(0).get(neuronInputInd);
 
                 NeuralLink currentNeuralLink = currentInputNeuron.get(neuronHiddenInd);
-
                 dSquaredNorm +=Math.pow(currentNeuralLink.GetWeight(),2.0);
             }
 
@@ -156,7 +148,6 @@ class Backpropagation implements TrainAlgorithm   {
                 Neuron currentInputNeuron = mNeuralNetwork.GetLayer(0).get(neuronInputInd);
 
                 NeuralLink currentNeuralLink = currentInputNeuron.get(neuronHiddenInd);
-
                 double dNewWeight = ( dScaleFactor * ( currentNeuralLink.GetWeight() ) ) / dNorm;
                 currentNeuralLink.SetWeight(dNewWeight);
             }
@@ -192,11 +183,7 @@ class Backpropagation implements TrainAlgorithm   {
                 for(int linkInd = 0; linkInd < currentNeuron.GetNumOfLinks(); linkInd++){
                     NeuralLink currentNeuralLink = currentNeuron.get(linkInd);
                     float pseudoRandWeight = -0.5f + ThreadLocalRandom.current().nextFloat(); // rand(-0.5..0.5)
-                    //float pseudoRandWeight = 0;
                     currentNeuralLink.SetWeight(pseudoRandWeight);
-
-                    //std::cout << "layerInd: " << layerInd << ", neuronInd: " << neuronInd << ", linkInd: " << linkInd << ", Weight: " << currentNeuralLink.GetWeight() << std::endl;
-
                 }
             }
         }
@@ -206,11 +193,7 @@ class Backpropagation implements TrainAlgorithm   {
             for(int linkInd = 0; linkInd < Bias.GetNumOfLinks(); linkInd++){
                 NeuralLink currentNeuralLink = Bias.get(linkInd);
                 float pseudoRandWeight = -0.5f + ThreadLocalRandom.current().nextFloat();
-                //float pseudoRandWeight = 0;
                 currentNeuralLink.SetWeight(pseudoRandWeight);
-
-                //std::cout << "layerInd Bias: " << layerInd  << ", linkInd: " << linkInd << ", Weight: " << currentNeuralLink.GetWeight() << std::endl;
-
             }
         }
     }

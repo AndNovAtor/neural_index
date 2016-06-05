@@ -141,6 +141,7 @@ public class NeuralNetworkTest {
         trainingSample.add(ts4);
         NeuralNetwork NN = new NeuralNetwork(3,1,4,6);
         NN.setMinMSE(0.000001);
+        NN.setMaxTrainItNum(70000);
         NN.Train(DataToFeedNN,trainingSample);
 
 

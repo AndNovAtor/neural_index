@@ -5,6 +5,7 @@ package com.andnovator.neural.network;
  */
 
 import java.util.*;
+import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -303,6 +304,9 @@ public class NeuralNetwork {
     List<Neuron> GetLayer(int inInd) {
         return mLayers.get(inInd);
     }
+    List<List<Neuron>> GetAllLayers() {
+        return mLayers;
+    }
 
     /**
      * Protected method size.
@@ -372,9 +376,7 @@ public class NeuralNetwork {
         for (List<Neuron> mLayer : mLayers) {
             mLayer.forEach(Neuron::ResetSumOfCharges);
         }
-        for (int i = 0; i < mLayers.size() - 1; i++) {
-            mBiasLayer.get(i).ResetSumOfCharges();
-        }
+        mBiasLayer.forEach(Neuron::ResetSumOfCharges);
     }
 
     /**
@@ -433,17 +435,18 @@ public class NeuralNetwork {
             maxTrainItNum = maxTrainIterationsNum;
         }
     }
-    public List<List<Double>> exportNetworkWeights() {
+    public List<double[]> exportNetworkWeights() {
 
         // 1. связи каждого сдвигового нейрона с остальными
-        Stream<Double> biasLinks = mBiasLayer.stream().flatMap(this::exportNeuronWeights);
+        DoubleStream biasLinks = mBiasLayer.stream().flatMap(this::exportNeuronWeights).mapToDouble(x -> x);
 
         // 2. связи каждого слоя
-        Stream<Double> otherNeuronsLinks = mLayers.stream()
+        DoubleStream otherNeuronsLinks = mLayers.stream()
                 .limit(mLayers.size()-1)
-                .flatMap( layer ->layer.stream().flatMap(this::exportNeuronWeights) );
+                .flatMap( layer ->layer.stream().flatMap(this::exportNeuronWeights) )
+                .mapToDouble(x -> x);
 
-        return Arrays.asList(biasLinks.collect(toList()), otherNeuronsLinks.collect(toList()));
+        return Arrays.asList(biasLinks.toArray(), otherNeuronsLinks.toArray());
     }
 
     private Stream<Double> exportNeuronWeights(Neuron n) {
