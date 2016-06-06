@@ -230,4 +230,25 @@ public class OneFileNeuralIndexTest {
         System.out.println(OneFileNeuralIndex.isDoubleBitZeroOrOne(-0.849));
         System.out.println(OneFileNeuralIndex.isDoubleBitZeroOrOne(0.9));
     }
+
+    @Test
+    public void dirLstTest() throws Exception {
+        List<String> plainTxtExt = Arrays.asList(
+            ".txt",
+            ".log",
+            ".xml",
+            ".html",
+            ".htm");
+        Files.walk(Paths.get("C:\\Users\\novator\\Desktop")).forEach(filePath -> {
+            if (Files.isDirectory(filePath)) {
+                System.out.println("Dir: " + filePath);
+            } else if (plainTxtExt.stream().anyMatch(ext->filePath.getFileName().toString().toLowerCase().endsWith(ext))) {
+                System.out.println("--> Text File: " + filePath);
+            } else if (Files.isRegularFile(filePath)) {
+                System.out.println("File: " + filePath);
+            } else {
+                System.out.println(" Something: " + filePath);
+            }
+        });
+    }
 }

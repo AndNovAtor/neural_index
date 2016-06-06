@@ -21,7 +21,7 @@ public class OneFileNeuralIndex {
     private int outputBitsNum = outputPosBitsNum + outputFreqBitsNum + 1;
     private double networkMinMSE = defaultNetworkMinMSE;
 
-    static private double defaultNetworkMinMSE = 5e-3;
+    static private double defaultNetworkMinMSE = 1e-2;
 
 
     public OneFileNeuralIndex() {
@@ -36,7 +36,7 @@ public class OneFileNeuralIndex {
         updateNetworkParams(posBitsNum, freqBitsNum);
     }
     public void loadSerializedNetwork(String filepath) throws IOException, ClassNotFoundException {
-        setNINetwork(new NetworkFileSerializer(filepath).<Double>deserializeNetwork(), outputPosBitsNum, outputFreqBitsNum);
+        setNINetwork(new NetworkFileSerializer(filepath).deserializeNetwork(), outputPosBitsNum, outputFreqBitsNum);
     }
     public static OneFileNeuralIndex loadSerializedIndex(String filepath) throws IOException, ClassNotFoundException {
         OneFileNeuralIndex ni = new OneFileNeuralIndex();
@@ -295,7 +295,7 @@ public class OneFileNeuralIndex {
                 trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
             }
         } else {
-            //Collections.shuffle(allWordsList);
+            Collections.shuffle(allWordsList);
             int wordsAdded = 0;
             for (String otherWord : allWordsList) {
                 if (itemWordsMap.get(otherWord) == null) {

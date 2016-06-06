@@ -9,9 +9,11 @@ import java.util.*;
  * Created by novator on 27.05.2016.
  */
 public class IndexingFileLoader {
+    @Deprecated
     public static DocumentWords loadDocument(String filePath, boolean useLemmatizator) throws IOException {
         return new DocumentWords(filePath).updateLemmsMap(loadFile(filePath, useLemmatizator));
     }
+    @Deprecated
     public static DocumentWords loadDocument(String filePath) throws IOException {
         return new DocumentWords(filePath).updateLemmsMap(loadFile(filePath, false));
     }

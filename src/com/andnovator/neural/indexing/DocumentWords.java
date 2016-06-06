@@ -5,6 +5,7 @@ import java.util.Map;
 /**
  * Created by novator on 27.05.2016.
  */
+@Deprecated
 public class DocumentWords {
     private String filepath;
     private Map<String, PosFreqPair> lemmsPosFreqMap;
