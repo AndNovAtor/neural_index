@@ -31,7 +31,7 @@ public class NetworkFileSerializer {
     public void setFileName(String fileName) { this.fileName = fileName; }
 
     public void saveNetwork(NeuralNetwork nn) throws IOException {
-        List<double[]> netWeights = nn.exportNetworkWeights();
+        List<double[]> netWeights = nn.exportNetworkWeightsArr();
         try (PrintWriter writer = new PrintWriter(fileName, "utf-8")) {
             writer.println("# NN config (inputs, outputs, hiddenLayersNum, neurons in every hiddenLayers, minMSE, maxTrainItNum)");
             writer.println(Arrays.asList(nn.getInputsNum(), nn.getOutputsNum(), nn.getHiddenLayersNum(), nn.getHiddenLayersSize(), nn.getMinMSE(), nn.getMaxTrainItNum())
@@ -105,7 +105,7 @@ public class NetworkFileSerializer {
     }
 
     public void seralizeNetwork(NeuralNetwork nn) throws IOException {
-        List<double[]> netWeights = nn.exportNetworkWeights();
+        List<double[]> netWeights = nn.exportNetworkWeightsArr();
         try (ObjectOutputStream ostream = new ObjectOutputStream(new FileOutputStream(fileName))) {
             ostream.writeInt(nn.getInputsNum());
             ostream.writeInt(nn.getOutputsNum());
@@ -127,15 +127,15 @@ public class NetworkFileSerializer {
             int hiddenLayersSize = istream.readInt();
             double minMSE = istream.readDouble();
             int maxTrainItNum = istream.readInt();
-            NeuralNetwork nn  = new NeuralNetwork(inputsNum, outputsNum, hiddenLayersNum, hiddenLayersSize);
-            nn.setMinMSE(minMSE);
-            nn.setMaxTrainItNum(maxTrainItNum);
             // FIXME: change List<Double> -> double[]
             @SuppressWarnings("unchecked")
-            List<Double> biasWeights = (List<Double>)istream.readObject();
+            double[] biasWeights = (double[]) istream.readObject();
             @SuppressWarnings("unchecked")
-            List<Double> simpleWeights = (List<Double>)istream.readObject();
-            nn.setNetworkWeights(biasWeights, simpleWeights);
+            double[] simpleWeights = (double[]) istream.readObject();
+            NeuralNetwork nn  = new NeuralNetwork(inputsNum, outputsNum, hiddenLayersNum, hiddenLayersSize);
+            nn.importNetworkWeights(biasWeights, simpleWeights);
+            nn.setMinMSE(minMSE);
+            nn.setMaxTrainItNum(maxTrainItNum);
             return nn;
         }
     }

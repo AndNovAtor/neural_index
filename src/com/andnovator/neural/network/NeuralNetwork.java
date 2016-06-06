@@ -5,6 +5,7 @@ package com.andnovator.neural.network;
  */
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
@@ -435,7 +436,7 @@ public class NeuralNetwork {
             maxTrainItNum = maxTrainIterationsNum;
         }
     }
-    public List<double[]> exportNetworkWeights() {
+    public List<double[]> exportNetworkWeightsArr() {
 
         // 1. связи каждого сдвигового нейрона с остальными
         DoubleStream biasLinks = mBiasLayer.stream().flatMap(this::exportNeuronWeights).mapToDouble(x -> x);
@@ -448,10 +449,18 @@ public class NeuralNetwork {
 
         return Arrays.asList(biasLinks.toArray(), otherNeuronsLinks.toArray());
     }
-
     private Stream<Double> exportNeuronWeights(Neuron n) {
         return n.GetLinksToNeurons().stream()
                 .map(NeuralLink::GetWeight);
+    }
+    public List<List<Double>> exportNetworkWeightsLst() {
+        // 1. связи каждого сдвигового нейрона с остальными
+        Stream<Double> biasLinks = mBiasLayer.stream().flatMap(this::exportNeuronWeights);
+        // 2. связи каждого слоя
+        Stream<Double> otherNeuronsLinks = mLayers.stream()
+                .limit(mLayers.size()-1)
+                .flatMap( layer ->layer.stream().flatMap(this::exportNeuronWeights) );
+        return Arrays.asList(biasLinks.collect(toList()), otherNeuronsLinks.collect(toList()));
     }
 
     /**
@@ -472,6 +481,11 @@ public class NeuralNetwork {
         setNetworkWeights(biasesWeights, simpleNeuronWeights);
     }
 
+    public void importNetworkWeights(double[] biasesWeights, double[] otherWeights) {
+        List<Double> bias = Arrays.stream(biasesWeights).boxed().collect(Collectors.toList());
+        List<Double> other = Arrays.stream(otherWeights).boxed().collect(Collectors.toList());
+        importNetworkWeights(bias, other);
+    }
     void setNetworkWeights(List<Double> biasesWeights, List<Double> otherWeights) {
         Iterator<Double> biasesIter = biasesWeights.iterator();
         mBiasLayer.forEach(biasNeuron ->
