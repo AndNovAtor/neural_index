@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>com.andnovator.neural.network</OriginalElement>
+  <nodes>
+    <node x="248.24463213213198" y="267.0">com.andnovator.neural.network.OutputLayerNeuronDecorator</node>
+    <node x="508.9254879879878" y="534.0">com.andnovator.neural.network.NeuralNetworkTest</node>
+    <node x="564.244632132132" y="0.0">com.andnovator.neural.network.NetworkFunction</node>
+    <node x="891.972147147147" y="89.0">com.andnovator.neural.network.Sigmoid</node>
+    <node x="479.14463213213196" y="267.0">com.andnovator.neural.network.HiddenLayerNeuronDecorator</node>
+    <node x="126.08333333333326" y="89.0">com.andnovator.neural.network.BipolarSigmoid</node>
+    <node x="807.972147147147" y="89.0">com.andnovator.neural.network.Linear</node>
+    <node x="466.3696321321319" y="89.0">com.andnovator.neural.network.NeuralLink</node>
+    <node x="347.9254879879878" y="534.0">com.andnovator.neural.network.NetworkFileSerializer</node>
+    <node x="403.83333333333326" y="346.0">com.andnovator.neural.network.PerceptronNeuronFactory</node>
+    <node x="462.9254879879878" y="613.0">com.andnovator.neural.network.NNSaveLoad2FileTest</node>
+    <node x="50.08333333333326" y="346.0">com.andnovator.neural.network.Backpropagation</node>
+    <node x="304.369632132132" y="89.0">com.andnovator.neural.network.DecimalPlusSigmoid</node>
+    <node x="690.144632132132" y="267.0">com.andnovator.neural.network.NeuronFactory</node>
+    <node x="465.9254879879878" y="455.0">com.andnovator.neural.network.NeuralNetwork</node>
+    <node x="7.008521021020897" y="534.0">com.andnovator.neural.network.Genetic</node>
+    <node x="461.76963213213196" y="178.0">com.andnovator.neural.network.Neuron</node>
+    <node x="0.0" y="267.0">com.andnovator.neural.network.TrainAlgorithm</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="com.andnovator.neural.network.PerceptronNeuronFactory" target="com.andnovator.neural.network.Neuron">
+      <point x="-21.125" y="-14.5" />
+      <point x="467.20833333333326" y="326.0" />
+      <point x="468.64463213213196" y="326.0" />
+      <point x="468.64463213213196" y="247.0" />
+      <point x="491.76963213213196" y="247.0" />
+      <point x="-6.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.NNSaveLoad2FileTest" target="com.andnovator.neural.network.NetworkFileSerializer">
+      <point x="-36.5" y="-14.5" />
+      <point x="499.4254879879878" y="588.0" />
+      <point x="418.4254879879878" y="588.0" />
+      <point x="0.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.NeuralNetwork" target="com.andnovator.neural.network.NeuronFactory">
+      <point x="12.444444444444457" y="-14.5" />
+      <point x="534.3699324324323" y="405.0" />
+      <point x="773.394632132132" y="405.0" />
+      <point x="27.75" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.Neuron" target="com.andnovator.neural.network.Linear">
+      <point x="28.80000000000001" y="-14.5" />
+      <point x="526.569632132132" y="158.0" />
+      <point x="823.972147147147" y="158.0" />
+      <point x="-16.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.Genetic" target="com.andnovator.neural.network.NeuralNetwork">
+      <point x="18.0" y="-14.5" />
+      <point x="61.0085210210209" y="504.0" />
+      <point x="479.9254879879878" y="504.0" />
+      <point x="-42.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.PerceptronNeuronFactory" target="com.andnovator.neural.network.OutputLayerNeuronDecorator">
+      <point x="-63.375" y="-14.5" />
+      <point x="424.95833333333326" y="326.0" />
+      <point x="343.244632132132" y="326.0" />
+      <point x="0.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.Genetic" target="com.andnovator.neural.network.TrainAlgorithm">
+      <point x="-18.0" y="-14.5" />
+      <point x="25.008521021020897" y="326.0" />
+      <point x="18.833333333333314" y="326.0" />
+      <point x="-37.666666666666686" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.NeuralNetwork" target="com.andnovator.neural.network.BipolarSigmoid">
+      <point x="-12.444444444444429" y="-14.5" />
+      <point x="509.48104354354336" y="405.0" />
+      <point x="182.58333333333326" y="405.0" />
+      <point x="0.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.OutputLayerNeuronDecorator" target="com.andnovator.neural.network.Neuron">
+      <point x="-47.5" y="-14.5" />
+      <point x="295.744632132132" y="227.0" />
+      <point x="467.76963213213196" y="227.0" />
+      <point x="-30.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.Sigmoid" target="com.andnovator.neural.network.NetworkFunction">
+      <point x="0.0" y="-14.5" />
+      <point x="929.972147147147" y="59.0" />
+      <point x="657.244632132132" y="59.0" />
+      <point x="31.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.NNSaveLoad2FileTest" target="com.andnovator.neural.network.NeuralNetwork">
+      <point x="36.5" y="-14.5" />
+      <point x="572.4254879879878" y="588.0" />
+      <point x="653.4254879879878" y="588.0" />
+      <point x="653.4254879879878" y="504.0" />
+      <point x="563.9254879879878" y="504.0" />
+      <point x="42.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.NeuralNetwork" target="com.andnovator.neural.network.PerceptronNeuronFactory">
+      <point x="7.105427357601002E-15" y="-14.5" />
+      <point x="521.9254879879878" y="395.0" />
+      <point x="488.33333333333326" y="395.0" />
+      <point x="0.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.HiddenLayerNeuronDecorator" target="com.andnovator.neural.network.Neuron">
+      <point x="-47.75" y="-14.5" />
+      <point x="526.894632132132" y="247.0" />
+      <point x="503.76963213213196" y="247.0" />
+      <point x="6.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.NeuralNetwork" target="com.andnovator.neural.network.TrainAlgorithm">
+      <point x="-49.77777777777776" y="-14.5" />
+      <point x="472.14771021021005" y="435.0" />
+      <point x="39.58333333333326" y="435.0" />
+      <point x="39.58333333333326" y="326.0" />
+      <point x="56.5" y="326.0" />
+      <point x="0.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.Linear" target="com.andnovator.neural.network.NetworkFunction">
+      <point x="0.0" y="-14.5" />
+      <point x="839.972147147147" y="69.0" />
+      <point x="636.5779654654652" y="69.0" />
+      <point x="10.333333333333314" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.NeuralNetworkTest" target="com.andnovator.neural.network.NeuralNetwork">
+      <point x="0.0" y="-14.5" />
+      <point x="575.9254879879878" y="514.0" />
+      <point x="535.9254879879878" y="514.0" />
+      <point x="14.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.Backpropagation" target="com.andnovator.neural.network.NeuralNetwork">
+      <point x="30.5" y="14.5" />
+      <point x="141.58333333333326" y="415.0" />
+      <point x="497.0365990990989" y="415.0" />
+      <point x="-24.88888888888887" y="-14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.DecimalPlusSigmoid" target="com.andnovator.neural.network.NetworkFunction">
+      <point x="0.0" y="-14.5" />
+      <point x="374.869632132132" y="59.0" />
+      <point x="595.244632132132" y="59.0" />
+      <point x="-31.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.Backpropagation" target="com.andnovator.neural.network.TrainAlgorithm">
+      <point x="0.0" y="-14.5" />
+      <point x="111.08333333333326" y="326.0" />
+      <point x="94.16666666666663" y="326.0" />
+      <point x="37.66666666666666" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.PerceptronNeuronFactory" target="com.andnovator.neural.network.NeuronFactory">
+      <point x="63.375" y="-14.5" />
+      <point x="551.7083333333333" y="326.0" />
+      <point x="717.894632132132" y="326.0" />
+      <point x="-27.75" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.NeuralLink" target="com.andnovator.neural.network.Neuron">
+      <point x="29.666666666666686" y="14.5" />
+      <point x="540.5362987987986" y="148.0" />
+      <point x="512.1696321321319" y="148.0" />
+      <point x="14.400000000000006" y="-14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.BipolarSigmoid" target="com.andnovator.neural.network.NetworkFunction">
+      <point x="0.0" y="-14.5" />
+      <point x="182.58333333333326" y="49.0" />
+      <point x="574.5779654654652" y="49.0" />
+      <point x="-51.666666666666686" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.Neuron" target="com.andnovator.neural.network.NeuralLink">
+      <point x="-14.400000000000006" y="-14.5" />
+      <point x="483.369632132132" y="158.0" />
+      <point x="481.20296546546524" y="158.0" />
+      <point x="-29.666666666666657" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.Neuron" target="com.andnovator.neural.network.NetworkFunction">
+      <point x="-28.80000000000001" y="-14.5" />
+      <point x="468.96963213213195" y="158.0" />
+      <point x="455.869632132132" y="158.0" />
+      <point x="455.869632132132" y="69.0" />
+      <point x="615.9112987987986" y="69.0" />
+      <point x="-10.333333333333343" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.PerceptronNeuronFactory" target="com.andnovator.neural.network.HiddenLayerNeuronDecorator">
+      <point x="21.125" y="-14.5" />
+      <point x="509.45833333333326" y="316.0" />
+      <point x="574.644632132132" y="316.0" />
+      <point x="0.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.NeuralNetwork" target="com.andnovator.neural.network.Backpropagation">
+      <point x="-37.333333333333314" y="-14.5" />
+      <point x="484.59215465465445" y="425.0" />
+      <point x="80.58333333333326" y="425.0" />
+      <point x="-30.5" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.NeuralNetwork" target="com.andnovator.neural.network.Linear">
+      <point x="37.33333333333334" y="-14.5" />
+      <point x="559.2588213213212" y="425.0" />
+      <point x="855.972147147147" y="425.0" />
+      <point x="16.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.NeuralNetwork" target="com.andnovator.neural.network.NetworkFunction">
+      <point x="49.77777777777777" y="-14.5" />
+      <point x="571.7032657657655" y="435.0" />
+      <point x="978.472147147147" y="435.0" />
+      <point x="978.472147147147" y="49.0" />
+      <point x="677.9112987987986" y="49.0" />
+      <point x="51.666666666666686" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.NetworkFileSerializer" target="com.andnovator.neural.network.NeuralNetwork">
+      <point x="0.0" y="-14.5" />
+      <point x="418.4254879879878" y="514.0" />
+      <point x="507.9254879879878" y="514.0" />
+      <point x="-14.0" y="14.5" />
+    </edge>
+    <edge source="com.andnovator.neural.network.NeuralNetwork" target="com.andnovator.neural.network.Neuron">
+      <point x="24.888888888888886" y="-14.5" />
+      <point x="546.8143768768766" y="415.0" />
+      <point x="811.644632132132" y="415.0" />
+      <point x="811.644632132132" y="227.0" />
+      <point x="527.769632132132" y="227.0" />
+      <point x="30.0" y="14.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.8927492447129909" x="489.5" y="321.0" />
+  <SelectedNodes>
+    <node>com.andnovator.neural.network.NeuralNetwork</node>
+  </SelectedNodes>
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>com.andnovator.neural.indexing</OriginalElement>
+  <nodes>
+    <node x="169.0" y="225.0">com.andnovator.neural.indexing.PosFreqPair</node>
+    <node x="0.0" y="0.0">com.andnovator.neural.indexing.OneFileNeuralIndexTest</node>
+    <node x="0.0" y="150.0">com.andnovator.neural.indexing.IndexingFileLoader</node>
+    <node x="178.0" y="150.0">com.andnovator.neural.indexing.FilesIndexSerializer</node>
+    <node x="0.0" y="300.0">com.andnovator.neural.indexing.FilesIndex</node>
+    <node x="0.0" y="225.0">com.andnovator.neural.indexing.DocumentWords</node>
+    <node x="0.0" y="75.0">com.andnovator.neural.indexing.OneFileNeuralIndex</node>
+  </nodes>
+  <notes />
+  <edges />
+  <settings layout="Hierarchic Group" zoom="1.0" x="154.5" y="165.0" />
+  <SelectedNodes>
+    <node>com.andnovator.neural.indexing.PosFreqPair</node>
+  </SelectedNodes>
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
