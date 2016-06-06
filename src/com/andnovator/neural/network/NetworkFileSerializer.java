@@ -105,39 +105,43 @@ public class NetworkFileSerializer {
     }
 
     public void seralizeNetwork(NeuralNetwork nn) throws IOException {
-        List<double[]> netWeights = nn.exportNetworkWeightsArr();
         try (ObjectOutputStream ostream = new ObjectOutputStream(new FileOutputStream(fileName))) {
-            ostream.writeInt(nn.getInputsNum());
-            ostream.writeInt(nn.getOutputsNum());
-            ostream.writeInt(nn.getHiddenLayersNum());
-            ostream.writeInt(nn.getHiddenLayersSize());
-            ostream.writeDouble(nn.getMinMSE());
-            ostream.writeInt(nn.getMaxTrainItNum());
-            ostream.writeObject(netWeights.get(0));
-            ostream.writeObject(netWeights.get(1));
+            seralizeNetwork(nn, ostream);
         }
-
     }
-
+    public void seralizeNetwork(NeuralNetwork nn, ObjectOutputStream ostream) throws IOException {
+        List<double[]> netWeights = nn.exportNetworkWeightsArr();
+        ostream.writeInt(nn.getInputsNum());
+        ostream.writeInt(nn.getOutputsNum());
+        ostream.writeInt(nn.getHiddenLayersNum());
+        ostream.writeInt(nn.getHiddenLayersSize());
+        ostream.writeDouble(nn.getMinMSE());
+        ostream.writeInt(nn.getMaxTrainItNum());
+        ostream.writeObject(netWeights.get(0));
+        ostream.writeObject(netWeights.get(1));
+    }
     public NeuralNetwork deserializeNetwork() throws IOException, ClassNotFoundException {
         try (ObjectInputStream istream = new ObjectInputStream(new FileInputStream(fileName))) {
-            int inputsNum = istream.readInt();
-            int outputsNum = istream.readInt();
-            int hiddenLayersNum = istream.readInt();
-            int hiddenLayersSize = istream.readInt();
-            double minMSE = istream.readDouble();
-            int maxTrainItNum = istream.readInt();
-            // FIXME: change List<Double> -> double[]
-            @SuppressWarnings("unchecked")
-            double[] biasWeights = (double[]) istream.readObject();
-            @SuppressWarnings("unchecked")
-            double[] simpleWeights = (double[]) istream.readObject();
-            NeuralNetwork nn  = new NeuralNetwork(inputsNum, outputsNum, hiddenLayersNum, hiddenLayersSize);
-            nn.importNetworkWeights(biasWeights, simpleWeights);
-            nn.setMinMSE(minMSE);
-            nn.setMaxTrainItNum(maxTrainItNum);
-            return nn;
+            return deserializeNetwork(istream);
         }
+    }
+    public NeuralNetwork deserializeNetwork(ObjectInputStream istream) throws IOException, ClassNotFoundException {
+        int inputsNum = istream.readInt();
+        int outputsNum = istream.readInt();
+        int hiddenLayersNum = istream.readInt();
+        int hiddenLayersSize = istream.readInt();
+        double minMSE = istream.readDouble();
+        int maxTrainItNum = istream.readInt();
+        // FIXME: change List<Double> -> double[]
+        @SuppressWarnings("unchecked")
+        double[] biasWeights = (double[]) istream.readObject();
+        @SuppressWarnings("unchecked")
+        double[] simpleWeights = (double[]) istream.readObject();
+        NeuralNetwork nn  = new NeuralNetwork(inputsNum, outputsNum, hiddenLayersNum, hiddenLayersSize);
+        nn.importNetworkWeights(biasWeights, simpleWeights);
+        nn.setMinMSE(minMSE);
+        nn.setMaxTrainItNum(maxTrainItNum);
+        return nn;
     }
 
     static public void convertNNTxtToSerBin(String txtFileName, String txtSeparatoer, String serFileName) throws Exception {
