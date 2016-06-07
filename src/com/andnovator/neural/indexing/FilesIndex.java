@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 /**
@@ -130,11 +131,19 @@ public class FilesIndex {
         }*/
         Map<String, PosFreqPair> wordsMapOneFile;
         OneFileNeuralIndex oneFileNI;
+        List<String > allWordsLst = new ArrayList<>();
+
         for (Path path : filesPath) {
-            wordsMapOneFile = IndexingFileLoader.loadFile(filesPath.toString());
+            wordsMapOneFile = IndexingFileLoader.loadFile(path.toString());
             allFileWords.addAll(wordsMapOneFile.keySet());
             allWords.addAll(wordsMapOneFile.keySet());
-
+            if ((ThreadLocalRandom.current().nextInt(10)>7) || (allWordsLst.isEmpty())) {
+                allWordsLst.clear();
+                allWordsLst.addAll(allWords);
+            }
+            oneFileNI = new OneFileNeuralIndex();
+            oneFileNI.setNetworkMinMSE(0.01);
+            oneFileNI.trainIndex(wordsMapOneFile, allWordsLst);
         }
     }
 

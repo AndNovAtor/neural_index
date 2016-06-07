@@ -132,7 +132,6 @@ public class NetworkFileSerializer {
         int hiddenLayersSize = istream.readInt();
         double minMSE = istream.readDouble();
         int maxTrainItNum = istream.readInt();
-        // FIXME: change List<Double> -> double[]
         @SuppressWarnings("unchecked")
         double[] biasWeights = (double[]) istream.readObject();
         @SuppressWarnings("unchecked")

@@ -2,6 +2,7 @@ package com.andnovator.neural.indexing;
 
 import com.andnovator.neural.network.NetworkFileSerializer;
 import com.andnovator.neural.network.NeuralNetwork;
+import edu.stanford.nlp.simple.Sentence;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -214,7 +215,7 @@ public class OneFileNeuralIndex {
     public static int maxMapStrLengthInLst(Map<String,PosFreqPair> stringPairMap) {
         return Collections.max(stringPairMap.keySet(), Comparator.comparingInt(String::length)).length();
     }
-    public static int maxStrLengthInLst(List<String> strings) {
+    public static int maxStrLengthInLst(Collection<String> strings) {
         return Collections.max(strings, Comparator.comparingInt(String::length)).length();
     }
 
@@ -295,6 +296,7 @@ public class OneFileNeuralIndex {
                 trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
             }
         } else {
+            // Fixme - needed clever random
             Collections.shuffle(allWordsList);
             int wordsAdded = 0;
             for (String otherWord : allWordsList) {
@@ -326,6 +328,11 @@ public class OneFileNeuralIndex {
             }
         }
         return resArr;
+    }
+    List<Double> wordSearchNetResponceNormal(String word) { return wordSearchNetResponceNormal(word, false); }
+    List<Double> wordSearchNetResponceNormal(String word, boolean isResPrint) {
+        String normalWord = new Sentence(word).lemma(0);
+        return wordSearchNetResponce(normalWord, isResPrint);
     }
     List<Double> wordSearchNetResponce(String word) {
         return wordSearchNetResponce(word, false);
