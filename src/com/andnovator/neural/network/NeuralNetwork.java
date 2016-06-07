@@ -4,6 +4,8 @@ package com.andnovator.neural.network;
  * Created by novator on 01.11.2015.
  */
 
+import com.andnovator.utils.Stopwatch;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
@@ -34,6 +36,9 @@ import static java.util.stream.Collectors.toList;
  */
 
 public class NeuralNetwork {
+
+    private final int debugEachIterations = 1000;
+
     /**
      * A Neural Network constructor.
      * - Description:    A template constructor. T is a data type, all the nodes will operate with. Create a neural network by providing it with:
@@ -138,27 +143,30 @@ public class NeuralNetwork {
 
     public boolean Train(List<List<Double>> inData, List<List<Double>> inTarget) {
         int iIteration = 0;
+        Stopwatch stopwatch = new Stopwatch();
         while (true) {
             ++iIteration;
             for (int i = 0; i < inData.size(); i++) {
                 mTrainingAlgoritm.Train(inData.get(i), inTarget.get(i));
             }
             double MSE = this.getMSE();
-
-            // debug output
-            if (iIteration % 1000 == 0) {
-                System.out.println("At " + iIteration + " iteration MSE: " + MSE + " > minMSE (" + mMinMSE + "), continue...");
-            }
             this.resetMSE();
             if (MSE < mMinMSE) {
-                System.out.println("At " + iIteration + " iteration MSE: " + MSE + " was achieved. SUCCESS");
+                System.out.printf("%s| At %d iteration MSE: %.4g was achieved. SUCCESS%n", Stopwatch.formatNow(), iIteration, MSE);
                 return true;
             }
             if (iIteration+1>maxTrainItNum) {
-                System.out.println("At " + (iIteration) + " iteration MSE was: " + MSE + " > minMSE (" + mMinMSE + "); but it's max iteration");
+                System.out.printf("%s| At %d iteration MSE was: %.4g > minMSE (%.4g); but it's max iteration%n", Stopwatch.formatNow(), iIteration, MSE, mMinMSE);
                 System.out.println("Training was stopped.");
                 System.out.println("Error - training is failure!");
                 return false;
+            }
+
+            // debug output
+            if (iIteration % debugEachIterations == 0) {
+                double nItersTimeSec = ((double) stopwatch.newLap()) / 1000.0;
+                double iterPerSec = ((double) debugEachIterations) / nItersTimeSec;
+                System.out.printf("%s| At %d iteration MSE: %.4g > minMSE (%.4g), continue... (%.2g iter/sec)%n", Stopwatch.formatNow(), iIteration, MSE, mMinMSE, iterPerSec);
             }
         }
     }
@@ -194,7 +202,7 @@ public class NeuralNetwork {
             }
 
 
-            if (printResults) { System.out.println("Net response is: {"); }
+            if (printResults) { System.out.print("Net response is: {"); }
             for (int indexOfOutputElements = 0; indexOfOutputElements < outputsNum; indexOfOutputElements++) {
 
 			/*
@@ -204,7 +212,7 @@ public class NeuralNetwork {
                 double res = this.GetOutputLayer().get(indexOfOutputElements).Fire();
                 netResponse.add(res);
 
-                if (printResults) { System.out.println("res: " + res); }
+                if (printResults) { System.out.print(res + "; "); }
 
 
             }
