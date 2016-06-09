@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
+ * Generic Neuron interface and implementations for hidden and output layer
  * Created by novator on 01.11.2015.
  */
 
@@ -100,8 +101,7 @@ public class Neuron {
     void Input( double inInputData ) { mSumOfCharges += inInputData; }
     double Fire()
     {
-        for(int iLink = 0; iLink < this.GetNumOfLinks(); iLink++){
-            NeuralLink pCurrentLink = mLinksToNeurons.get(iLink);
+        for(NeuralLink pCurrentLink : mLinksToNeurons){
             Neuron pCurrentNeuronLinkedTo = pCurrentLink.GetNeuronLinkedTo();
 
             final double dWeight = pCurrentLink.GetWeight();
@@ -129,7 +129,26 @@ public class Neuron {
 
 
     double PerformTrainingProcess(double inTarget) {return 0;}
-    void PerformWeightsUpdating() {}
+    void applyWeightCorrection(double dErrorInformationTermj) {
+        for(NeuralLink pInputLink : this.GetInputLink()){
+            double Xi = pInputLink.GetLastTranslatedSignal();
+            double dWeightCorrectionTerm = Xi*dErrorInformationTermj;
+            //std::cout << "dWeightCorrectionTerm: " << dWeightCorrectionTerm << std::endl;
+            pInputLink.SetWeightCorrectionTerm(LearningRate*dWeightCorrectionTerm);
+
+
+            /*
+             * 		Then hidden/output unit has to tell the input/hidden neurons the value of it ErrorInformationTerm, so we are setting its value
+             * 		in the link object.
+             */
+
+            pInputLink.SetErrorInFormationTerm(dErrorInformationTermj);
+        }
+    }
+    void PerformWeightsUpdating() {
+        this.GetInputLink().forEach(NeuralLink::UpdateWeight);
+    }
+
 
     void ShowNeuronState()
     {
@@ -188,39 +207,16 @@ class OutputLayerNeuronDecorator extends Neuron {
         //std::cout << "dErrorInformationTermOutput: " << dErrorInformationTerm << " as: " << "(" << inTarget << " - " << mOutputCharge << ")" << " * " << mNeuron.Derivative() << " .Derivative of:  " << mNeuron.GetSumOfCharges()<< std::endl;
         //std::cin.get();
 
-	/*
-	 * 		For every link to that output, (inputLinks) calculate its weight correction term
-	 * 		and update the link with it.
-	*/
-        for(int iInputLink = 0; iInputLink < (this.GetInputLink()).size(); iInputLink++){
-            NeuralLink pInputLink = (this.GetInputLink()).get(iInputLink);
-            double Zj = pInputLink.GetLastTranslatedSignal();
-            double dWeightCorrectionTerm = Zj*dErrorInformationTerm;
-            //std::cout << "dWeightCorrectionTerm: " << dWeightCorrectionTerm << std::endl;
-            pInputLink.SetWeightCorrectionTerm(LearningRate*dWeightCorrectionTerm);
-
-
-		/*
-		 * 		Then output unit has to tell the hidden neurons the value of it ErrorInformationTerm, so we are setting its value
-		 * 		in the link object.
-		 */
-
-            pInputLink.SetErrorInFormationTerm(dErrorInformationTerm);
-        }
+    /*
+     * 		For every link to that output, (inputLinks) calculate its weight correction term
+     * 		and update the link with it.
+    */
+        applyWeightCorrection(dErrorInformationTerm);
 
 
         return res;
     }
 
-    public void PerformWeightsUpdating()
-    {
-        for( int iInputLink = 0; iInputLink < (this.GetInputLink()).size(); iInputLink++){
-            NeuralLink pInputLink = (this.GetInputLink()).get(iInputLink);
-
-            pInputLink.UpdateWeight();
-            //std::cout<<"";
-        }
-    }
     public void ShowNeuronState( ) { mNeuron.ShowNeuronState( ); }
 
     protected double mOutputCharge;
@@ -243,12 +239,10 @@ class HiddenLayerNeuronDecorator<T> extends Neuron {
          * 		and sends this signal to all units in the layer above (output units).
         */
 
-        for(int iLink = 0; iLink < this.GetNumOfLinks(); iLink++){
-
-            NeuralLink pCurrentLink = mNeuron.get(iLink);
+        for(NeuralLink pCurrentLink : mNeuron.GetLinksToNeurons()){
             Neuron pCurrentNeuronLinkedTo = pCurrentLink.GetNeuronLinkedTo();
 
-            final double dWeight = mNeuron.get(iLink).GetWeight(); //TODO: And so what about constants? Need "final"?
+            final double dWeight = pCurrentLink.GetWeight(); //TODO: And so what about constants? Need "final"?
             double	dCharge = mNeuron.GetSumOfCharges();
             double	dZj = (mNeuron.Process(dCharge));
             double 	dOutput = dZj*dWeight;
@@ -278,17 +272,15 @@ class HiddenLayerNeuronDecorator<T> extends Neuron {
          * 		Hidden unit sums its delta inputs from units in the layer above
         */
         double dDeltaInputs = 0;
-        for(int iOutputLink = 0; iOutputLink < (this.GetNumOfLinks()); iOutputLink++){
-            NeuralLink pOutputLink = (this.GetLinksToNeurons()).get(iOutputLink);
+        for(NeuralLink pOutputLink: this.GetLinksToNeurons()){
             double dErrorInformationTerm = pOutputLink.GetErrorInFormationTerm();
             double dWeight = pOutputLink.GetWeight();
-            dDeltaInputs = dDeltaInputs + (dWeight*dErrorInformationTerm);
+            dDeltaInputs += (dWeight * dErrorInformationTerm);
         }
 
-    /*	for(int iOutputLink = 0; iOutputLink < (this.GetNumOfLinks()); iOutputLink++){
-                NeuralLink * pOutputLink = (this.GetLinksToNeurons()).get(iOutputLink);
-                pOutputLink.UpdateWeight();
-        }*/
+        /*
+        this.GetLinksToNeurons().forEach(NeuralLink::UpdateWeight);
+        */
 
         double dErrorInformationTermj = dDeltaInputs * (this.Derivative());
         //std::cout << "dErrorInformationTermjHidden: " << dErrorInformationTermj << " as: " << dDeltaInputs << " * " << this.Derivative() << " .Derivative of:  " << mNeuron.GetSumOfCharges()<< std::endl;
@@ -297,31 +289,8 @@ class HiddenLayerNeuronDecorator<T> extends Neuron {
          * 		For every link to that hidden neuron, (inputLinks) calculate its weight correction term
          * 		and update the link with it.
         */
-        for(int iInputLink = 0; iInputLink < (this.GetInputLink()).size(); iInputLink++){
-            NeuralLink pInputLink = (this.GetInputLink()).get(iInputLink);
-            double Xi = pInputLink.GetLastTranslatedSignal();
-            double dWeightCorrectionTerm = Xi*dErrorInformationTermj;
-            //std::cout << "dWeightCorrectionTerm: " << dWeightCorrectionTerm << std::endl;
-            pInputLink.SetWeightCorrectionTerm(LearningRate*dWeightCorrectionTerm);
-
-
-            /*
-             * 		Then hidden unit has to tell the input neurons the value of it ErrorInformationTerm, so we are setting its value
-             * 		in the link object.
-             */
-
-            pInputLink.SetErrorInFormationTerm(dErrorInformationTermj);
-        }
+        applyWeightCorrection(dErrorInformationTermj);
         return 0;
-    }
-    void PerformWeightsUpdating( )
-    {
-        for( int iInputLink = 0; iInputLink < (this.GetInputLink()).size(); iInputLink++){
-            NeuralLink pInputLink = (this.GetInputLink()).get(iInputLink);
-
-            pInputLink.UpdateWeight();
-            //std::cout<<"";
-        }
     }
 
     void ShowNeuronState( ) { mNeuron.ShowNeuronState( ); }

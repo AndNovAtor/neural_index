@@ -1,11 +1,10 @@
 package com.andnovator.neural.network;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
+ * Generic training algorithm for neural network and its implementations, e.g. back propagation
  * Created by novator on 01.11.2015.
  */
 public interface TrainAlgorithm {  //TODO: Is it OK, if it's interface?
@@ -38,24 +37,29 @@ class Backpropagation implements TrainAlgorithm   {
 		 * 		broadcast this signal to all units in the layer above (the hidden units)
 		*/
 
+            // подаём входы
+            List<Neuron> inputLayer = mNeuralNetwork.GetInputLayer();
             for(int indexOfData = 0; indexOfData < mNeuralNetwork.inputsNum; indexOfData++){
                 //System.out.println("input" << indexOfData << ": " << inData.get(indexOfData));
-                mNeuralNetwork.GetInputLayer().get(indexOfData).Input(inData.get(indexOfData));
+                inputLayer.get(indexOfData).Input(inData.get(indexOfData));
             }
 
-
+            // для каждого слоя, кроме последнего...
             for(int numOfLayer = 0; numOfLayer < mNeuralNetwork.size() - 1; numOfLayer++){
-                mNeuralNetwork.GetBiasLayer().get(numOfLayer).Input(1.0);
+                // n-й слой
+                List<Neuron> layer = mNeuralNetwork.GetLayer(numOfLayer);
+                // bias-нейрон от этого слоя
+                Neuron biasNeuron = mNeuralNetwork.GetBiasLayer().get(numOfLayer);
+
+                biasNeuron.Input(1.0);
                 //System.out.println("BiasInput"  );
                 //System.out.println("Layer: " << numOfLayer);
-                for(int indexOfNeuronInLayer = 0; indexOfNeuronInLayer < mNeuralNetwork.GetLayer(numOfLayer).size(); indexOfNeuronInLayer++){
-                    //System.out.println("IndexOfNeuron: " << indexOfNeuronInLayer);
-                    mNeuralNetwork.GetLayer(numOfLayer).get(indexOfNeuronInLayer).Fire();
-                }
+                //System.out.println("IndexOfNeuron: " << indexOfNeuronInLayer);
+                layer.forEach(Neuron::Fire);
                 //System.out.println("Bias: " << numOfLayer);
-                mNeuralNetwork.GetBiasLayer().get(numOfLayer).Fire();
-                for(int i = 0; i < mNeuralNetwork.GetBiasLayer().get(numOfLayer).GetNumOfLinks(); i++){
-                    mNeuralNetwork.GetBiasLayer().get(numOfLayer).GetLinksToNeurons().get(i).SetLastTranslatedSignal(1);
+                biasNeuron.Fire();
+                for (NeuralLink biasLink : biasNeuron.GetLinksToNeurons()) {
+                    biasLink.SetLastTranslatedSignal(1);
                 }
             }
 
@@ -63,7 +67,8 @@ class Backpropagation implements TrainAlgorithm   {
 		 * 		Step 5. Each output unit applies its activation function to compute its output
 		 * 		signal.
 		*/
-            mNeuralNetwork.GetOutputLayer().forEach(Neuron::Fire);
+            List<Neuron> outputLayer = mNeuralNetwork.GetOutputLayer();
+            outputLayer.forEach(Neuron::Fire);
             /*List<Double> netResponseYk = new ArrayList<>();
             for(int indexOfOutputElements = 0; indexOfOutputElements < mNeuralNetwork.outputsNum; indexOfOutputElements++){
                 mNeuralNetwork.GetOutputLayer().get(indexOfOutputElements).Fire();
@@ -77,7 +82,7 @@ class Backpropagation implements TrainAlgorithm   {
 		*/
 
             for(int indexOfData = 0; indexOfData < mNeuralNetwork.outputsNum; indexOfData++){
-                result = mNeuralNetwork.GetOutputLayer().get(indexOfData).PerformTrainingProcess(inTarget.get(indexOfData));
+                result = outputLayer.get(indexOfData).PerformTrainingProcess(inTarget.get(indexOfData));
                 mNeuralNetwork.addMSE(result);
             }
 		/*
@@ -85,8 +90,9 @@ class Backpropagation implements TrainAlgorithm   {
 		 *		layers except input one, so fix it DUDE!
 		*/
             for(int iIndOfLayer = mNeuralNetwork.size() - 2; iIndOfLayer > 0 ; iIndOfLayer--){
-                for(int indexOfNeuron = 0; indexOfNeuron < mNeuralNetwork.GetLayer(iIndOfLayer).size(); indexOfNeuron++){
-                    mNeuralNetwork.GetLayer(iIndOfLayer).get(indexOfNeuron).PerformTrainingProcess(0);
+                List<Neuron> layer = mNeuralNetwork.GetLayer(iIndOfLayer);
+                for (Neuron neuron : layer) {
+                    neuron.PerformTrainingProcess(0);
                 }
             }
             mNeuralNetwork.UpdateWeights();

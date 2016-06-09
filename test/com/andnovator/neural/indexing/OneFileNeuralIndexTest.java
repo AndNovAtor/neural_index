@@ -1,7 +1,6 @@
 package com.andnovator.neural.indexing;
 
 import com.andnovator.neural.network.NetworkFileSerializer;
-import com.andnovator.neural.network.NeuralNetwork;
 import com.andnovator.utils.FileLemmatizationUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -14,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
+ * Indexing of contents of one file
  * Created by novator on 10.05.2016.
  */
 public class OneFileNeuralIndexTest {
@@ -21,6 +21,7 @@ public class OneFileNeuralIndexTest {
     private String defaultFilePath = "neural_index.txt";
     private String defaultSerFileName = "neural_index";
     private String defaultSerFileExt = ".ser";
+    private String defaultTextFileExt = ".txt";
     private String defaultSerFilePath = defaultSerFileName+defaultSerFileExt;
     private String defaultSeparator = "; ";
     public static final String DATE_FORMAT_NOW = "yyyy-MM-dd_HH.mm.ss";
@@ -135,15 +136,12 @@ public class OneFileNeuralIndexTest {
         //File:
         List<String> oneFileWords = allWords.subList(0,10);
         List<String> secFileWords = allWords.subList(8,18);
-        List<String> allFilesWords;
-        // All files words:
-        allFilesWords = new ArrayList<>(allWords.subList(0,18));
         // File words hashmap
         HashMap<String, PosFreqPair> fileWordsMap2 = new HashMap<>(secFileWords.size());
         for (int i = 0; i < secFileWords.size(); ++i) {
             fileWordsMap2.put(secFileWords.get(i), new PosFreqPair(i,1));
         }
-        /*HashMap<String, PosFreqPair> fileWordsMap1 = new HashMap<>(oneFileWords.size());
+        HashMap<String, PosFreqPair> fileWordsMap1 = new HashMap<>(oneFileWords.size());
         for (int i = 0; i < oneFileWords.size(); ++i) {
             fileWordsMap1.put(oneFileWords.get(i), new PosFreqPair(i,1));
         }
@@ -155,19 +153,20 @@ public class OneFileNeuralIndexTest {
             System.out.println("For word: " + word);
             resArr = fileNIndex.wordSearch(word, true);
             System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
-        }*/
-        OneFileNeuralIndex fileNIndex2 = new OneFileNeuralIndex();
-        fileNIndex2.loadSerializedNetwork(defaultSerFileName+"2"+defaultSerFileExt);
-        fileNIndex2.setNetworkMinMSE(0.005);
-        Assert.assertTrue( fileNIndex2.trainIndex(fileWordsMap2, allWords, false) );
-        int[] resArr;
-        for (String word : allWords) {
-            System.out.println("For word: " + word);
-            resArr = fileNIndex2.wordSearch(word, true);
-            System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
         }
-        new NetworkFileSerializer(defaultSerFileName+"_"+ SDF_YMD_HMS.format(new Date()) +defaultSerFileExt).seralizeNetwork(fileNIndex2.getNeuroIndexNetwork());
-//        new NetworkFileSerializer(defaultFilePath).saveNetwork(fileNIndex.getNeuroIndexNetwork());
+//        OneFileNeuralIndex fileNIndex2 = new OneFileNeuralIndex();
+//        fileNIndex2.loadSerializedNetwork(defaultSerFileName+"2"+defaultSerFileExt);
+//        fileNIndex2.setNetworkMinMSE(0.005);
+//        Assert.assertTrue( fileNIndex2.trainIndex(fileWordsMap2, allWords, false) );
+//        int[] resArr;
+//        for (String word : allWords) {
+//            System.out.println("For word: " + word);
+//            resArr = fileNIndex2.wordSearch(word, true);
+//            System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
+//        }
+        String date = SDF_YMD_HMS.format(new Date());
+        new NetworkFileSerializer(defaultSerFileName+"_"+ date +defaultSerFileExt).seralizeNetwork(fileNIndex.getNeuroIndexNetwork());
+        new NetworkFileSerializer(defaultFilePath+"_"+date+defaultTextFileExt).saveNetwork(fileNIndex.getNeuroIndexNetwork());
 //        return new Pair<>(fileNIndex.getNeuroIndexNetwork(), fileNIndex.wordSearchNetResponce(allWords.get(18)));
     }
 
@@ -198,11 +197,6 @@ public class OneFileNeuralIndexTest {
         } // catch (FileNotFoundException e)
         //Below - surround with catch IOException
         System.out.println(new String(Files.readAllBytes(Paths.get("file.txt")), StandardCharsets.UTF_8));
-    }
-
-    @Test
-    public void testCorelNLP() throws Exception {
-        DocumentWords documentWords = IndexingFileLoader.loadDocument("file.txt");
     }
 
     @Test
