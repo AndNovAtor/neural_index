@@ -49,7 +49,7 @@ public class OneFileNeuralIndex {
     private void createNINetwork(int maxWordLength) {
         setMaxWordLength(maxWordLength);
 //        int numOfNeuronsInHiddenLayers = inputsNum + 8;
-        int numOfNeuronsInHiddenLayers = inputsNum + 8;
+        int numOfNeuronsInHiddenLayers = inputsNum*3/2;
         neuroIndexNetwork = new NeuralNetwork(inputsNum,outputBitsNum,3, numOfNeuronsInHiddenLayers);
         neuroIndexNetwork.setMinMSE(defaultNetworkMinMSE);
     }
@@ -84,7 +84,7 @@ public class OneFileNeuralIndex {
         }
     }
     public void setNetworkMinMSE(double minMSE) {
-        if ((minMSE > 0) && (minMSE < 0.5)) {
+        if ((minMSE > 0) && (minMSE < 50)) {
             if (neuroIndexNetwork != null) {
                 neuroIndexNetwork.setMinMSE(minMSE);
             }
@@ -294,24 +294,24 @@ public class OneFileNeuralIndex {
         }
         int allWordsNum = allWordsList.size();
         // FIXME: there should be correct constant, it is taken by words num
-        final int someConstantOtherWordFeedNum = 6;
-        if (itemWordsMap.size() >= allWordsList.size()) {
-            for (String otherWord : generateRandWordList(someConstantOtherWordFeedNum)) {
-                wordsToFeed.add(strToDoubleBits(otherWord));
-                trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
-            }
-        } else {
-            Collections.shuffle(allWordsList);
-            int wordsAdded = 0;
-            for (String otherWord : allWordsList) {
-                if (itemWordsMap.get(otherWord) == null) {
-                    if (wordsAdded>=someConstantOtherWordFeedNum) { break; }
-                    wordsToFeed.add(strToDoubleBits(otherWord));
-                    trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
-                    ++wordsAdded;
-                }
-            }
-        }
+//        final int someConstantOtherWordFeedNum = 6;
+//        if (itemWordsMap.size() >= allWordsList.size()) {
+//            for (String otherWord : generateRandWordList(someConstantOtherWordFeedNum)) {
+//                wordsToFeed.add(strToDoubleBits(otherWord));
+//                trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
+//            }
+//        } else {
+//            Collections.shuffle(allWordsList);
+//            int wordsAdded = 0;
+//            for (String otherWord : allWordsList) {
+//                if (itemWordsMap.get(otherWord) == null) {
+//                    if (wordsAdded>=someConstantOtherWordFeedNum) { break; }
+//                    wordsToFeed.add(strToDoubleBits(otherWord));
+//                    trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
+//                    ++wordsAdded;
+//                }
+//            }
+//        }
         return neuroIndexNetwork.Train(wordsToFeed, trainingSample);
     }
     public int[] wordSearch(String word){

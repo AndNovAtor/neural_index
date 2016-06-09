@@ -2,7 +2,9 @@ package com.andnovator.neural.indexing;
 
 import com.andnovator.neural.network.NetworkFileSerializer;
 import com.andnovator.utils.FileLemmatizationUtils;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -26,6 +28,14 @@ public class OneFileNeuralIndexTest {
     private String defaultSeparator = "; ";
     public static final String DATE_FORMAT_NOW = "yyyy-MM-dd_HH.mm.ss";
     public static final SimpleDateFormat SDF_YMD_HMS = new SimpleDateFormat(DATE_FORMAT_NOW);
+
+
+    private int totalExpectationsFailed = 0;
+
+    @Before
+    public void setUp() throws Exception {
+        totalExpectationsFailed = 0;
+    }
 
     @Test
     public void indexOneFileTest() throws Exception {
@@ -59,16 +69,17 @@ public class OneFileNeuralIndexTest {
         //
 
         OneFileNeuralIndex fileNIndex = new OneFileNeuralIndex();
-        fileNIndex.setNetworkMinMSE(0.01);
+        fileNIndex.setNetworkMinMSE(4.2);
 
         ArrayList<String> allWordsLst = new ArrayList<>(allFilesWords);
         Assert.assertTrue( fileNIndex.trainIndex(wordsMapOneFile, allWordsLst) );
-        int[] resArr;
-        for (String word : allWordsLst) {
+        wordsMapOneFile.forEach( (word, posFreqPair) -> {
             System.out.println("For word: " + word);
-            resArr = fileNIndex.wordSearch(word, true);
+            int[] resArr = fileNIndex.wordSearch(word, true);
             System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
-        }
+            expectEquals(posFreqPair.getPos(), resArr[0]);
+            expectEquals(posFreqPair.getFreq(), resArr[1]);
+        });
 
         new NetworkFileSerializer(defaultSerFileName+"_"+ Paths.get(filePath).getFileName() +defaultSerFileExt).seralizeNetwork(fileNIndex.getNeuroIndexNetwork());
 //        new NetworkFileSerializer(defaultFilePath).saveNetwork(fileNIndex.getNeuroIndexNetwork());
@@ -166,7 +177,7 @@ public class OneFileNeuralIndexTest {
 //        }
         String date = SDF_YMD_HMS.format(new Date());
         new NetworkFileSerializer(defaultSerFileName+"_"+ date +defaultSerFileExt).seralizeNetwork(fileNIndex.getNeuroIndexNetwork());
-        new NetworkFileSerializer(defaultFilePath+"_"+date+defaultTextFileExt).saveNetwork(fileNIndex.getNeuroIndexNetwork());
+//        new NetworkFileSerializer(defaultFilePath+"_"+date+defaultTextFileExt).saveNetwork(fileNIndex.getNeuroIndexNetwork());
 //        return new Pair<>(fileNIndex.getNeuroIndexNetwork(), fileNIndex.wordSearchNetResponce(allWords.get(18)));
     }
 
@@ -244,5 +255,18 @@ public class OneFileNeuralIndexTest {
                 System.out.println(" Something: " + filePath);
             }
         });
+    }
+
+    void expectEquals(int expected, int actual) {
+        if (expected != actual) {
+            System.out.flush();
+            System.err.println("ERROR: expected: " + expected + "; actual: " + actual);
+            totalExpectationsFailed += 1;
+        }
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        Assert.assertEquals(0, totalExpectationsFailed);
     }
 }

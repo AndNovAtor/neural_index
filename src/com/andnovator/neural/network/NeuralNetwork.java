@@ -1,6 +1,9 @@
 package com.andnovator.neural.network;
 
 /**
+ * Neural network with variable number of layers and neurons per layer
+ *
+ * Can be trained with Train depending on requested value of MSE
  * Created by novator on 01.11.2015.
  */
 
@@ -37,7 +40,7 @@ import static java.util.stream.Collectors.toList;
 
 public class NeuralNetwork {
 
-    private final int debugEachIterations = 1000;
+    private final int debugEachIterations = 100;
 
     /**
      * A Neural Network constructor.
@@ -144,6 +147,8 @@ public class NeuralNetwork {
     public boolean Train(List<List<Double>> inData, List<List<Double>> inTarget) {
         int iIteration = 0;
         Stopwatch stopwatch = new Stopwatch();
+        System.out.printf("%s| Start training (%d training samples) network with %d:inputs, %d:outputs, %d:hidden x %d:layers and LearningRate = %g%n",
+                Stopwatch.formatNow(), inData.size(), inputsNum, outputsNum, neuronsPerHidden, hiddenLayersNum, Neuron.LearningRate);
         while (true) {
             ++iIteration;
             for (int i = 0; i < inData.size(); i++) {
@@ -472,9 +477,9 @@ public class NeuralNetwork {
     }
 
     /**
-     *
-     * @param biasesWeights
-     * @param simpleNeuronWeights
+     * восстанавливает сеть по весам
+     * @param biasesWeights веса сдвиговых нейронов
+     * @param simpleNeuronWeights веса связей обычных нейронов
      * @throws IllegalArgumentException если размеры массивов некорректны
      */
     public void importNetworkWeights(List<Double> biasesWeights, List<Double> simpleNeuronWeights) throws IllegalArgumentException { // {
@@ -527,5 +532,5 @@ public class NeuralNetwork {
     int inputsNum, outputsNum, hiddenLayersNum, neuronsPerHidden; // Number of inputs, outputs, hidden layers and units in every hidden layer
     double mMeanSquaredError;  // Mean Squared Error which is changing every iteration of the training
     double mMinMSE;          // The biggest Mean Squared Error required for training to stop
-    int maxTrainItNum = 60000;
+    int maxTrainItNum = 100000; // for experiments
 }

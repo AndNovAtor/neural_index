@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class Neuron {
 
-    public static final double LearningRate = 0.01; //TODO: What to do with "constant"?!
+    public static final double LearningRate = 0.02; //TODO: What to do with "constant"?!
 
     /**
      * 		A default Neuron constructor.
