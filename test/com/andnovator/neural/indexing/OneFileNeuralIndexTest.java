@@ -13,7 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * Indexing of contents of one file
+ * test for Indexing of contents of one file
  * Created by novator on 10.05.2016.
  */
 public class OneFileNeuralIndexTest {
