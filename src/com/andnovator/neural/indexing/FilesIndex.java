@@ -165,16 +165,16 @@ public class FilesIndex {
         }
 
 
-        NeuralNetwork allFilesNet = new NeuralNetwork(0, 0, 0, 0); // TODO: correct values
-        allFilesNet.Train(wordsToFeed, trainingSample);
+        filesIndexNN = new NeuralNetwork(inputsNum, outputBitsNum, 3, inputsNum+6);
+        filesIndexNN.Train(wordsToFeed, trainingSample);
     }
 
     private List<Double> findFilesForWord(String word) {
         return IntStream.range(0, filesPath.size())
-                        // если в файле #fileIndex содержится слово word - то +1, иначе -1
-                        .map( fileIndex -> wordsByFile.get(fileIndex).contains(word) ? +1 : -1)
-                        .mapToObj(Double::valueOf)
-                        .collect(toList());
+                // если в файле #fileIndex содержится слово word - то +1, иначе -1
+                .map( fileIndex -> wordsByFile.get(fileIndex).contains(word) ? +1 : -1)
+                .mapToObj(Double::valueOf)
+                .collect(toList());
     }
 
     public void addFileNI(OneFileNeuralIndex niNN) {
