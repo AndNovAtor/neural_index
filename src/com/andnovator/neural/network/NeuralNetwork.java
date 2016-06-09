@@ -41,6 +41,7 @@ import static java.util.stream.Collectors.toList;
 public class NeuralNetwork {
 
     private final int debugEachIterations = 100;
+    private final int mseReduceIterations = 50;
 
     /**
      * A Neural Network constructor.
@@ -61,7 +62,9 @@ public class NeuralNetwork {
     public NeuralNetwork(int inInputs, int inOutputs, int inNumOfHiddenLayers, int inNumOfNeuronsInHiddenLayers, String inTypeOfNeuralNetwork) {
         if ((inInputs > 0) && (inOutputs > 0)) {
             mMinMSE = 0.01;
-            mMeanSquaredError = 0;
+            minMSESpeed = 0.01;
+            mMSE = 0;
+            lastMSE = 0;
             inputsNum = inInputs;
             outputsNum = inOutputs;
             neuronsPerHidden = inNumOfNeuronsInHiddenLayers;
@@ -160,6 +163,18 @@ public class NeuralNetwork {
                 System.out.printf("%s| At %d iteration MSE: %.4g was achieved. SUCCESS%n", Stopwatch.formatNow(), iIteration, MSE);
                 return true;
             }
+
+            if (iIteration % mseReduceIterations == 0) {
+                if (lastMSE != 0) {
+                    mMSESpeed = Math.abs(lastMSE - MSE) / MSE;
+                    if (mMSESpeed < minMSESpeed) {
+                        System.out.printf("%s| At %d iteration MSE: %.4g was achieved. SUCCESS%n", Stopwatch.formatNow(), iIteration, MSE);
+                        return true;
+                    }
+                }
+                lastMSE = MSE;
+            }
+
             if (iIteration+1>maxTrainItNum) {
                 System.out.printf("%s| At %d iteration MSE was: %.4g > minMSE (%.4g); but it's max iteration%n", Stopwatch.formatNow(), iIteration, MSE, mMinMSE);
                 System.out.println("Training was stopped.");
@@ -171,7 +186,7 @@ public class NeuralNetwork {
             if (iIteration % debugEachIterations == 0) {
                 double nItersTimeSec = ((double) stopwatch.newLap()) / 1000.0;
                 double iterPerSec = ((double) debugEachIterations) / nItersTimeSec;
-                System.out.printf("%s| At %d iteration MSE: %.4g > minMSE (%.4g), continue... (%.2g iter/sec)%n", Stopwatch.formatNow(), iIteration, MSE, mMinMSE, iterPerSec);
+                System.out.printf("%s| At %d iteration MSE: %.4g > minMSE (%.4g), MSE speed %.4g, continue... (%.2g iter/sec)%n", Stopwatch.formatNow(), iIteration, MSE, mMinMSE, mMSESpeed, iterPerSec);
             }
         }
     }
@@ -403,7 +418,7 @@ public class NeuralNetwork {
      */
 
     void addMSE(double inPortion) {
-        mMeanSquaredError += inPortion;
+        mMSE += inPortion;
     }
 
     /**
@@ -414,7 +429,7 @@ public class NeuralNetwork {
      */
 
     double getMSE() {
-        return mMeanSquaredError;
+        return mMSE;
     }
 
     /**
@@ -425,7 +440,8 @@ public class NeuralNetwork {
      */
 
     void resetMSE() {
-        mMeanSquaredError = 0;
+        mMSE = 0;
+        mMSESpeed = 0;
     }
 
     NeuronFactory mNeuronFactory;       /*!< Member, which is responsible for creating neurons @see SetNeuronFactory */
@@ -530,7 +546,11 @@ public class NeuralNetwork {
 
 
     int inputsNum, outputsNum, hiddenLayersNum, neuronsPerHidden; // Number of inputs, outputs, hidden layers and units in every hidden layer
-    double mMeanSquaredError;  // Mean Squared Error which is changing every iteration of the training
+    double mMSE;  // Mean Squared Error which is changing every iteration of the training
     double mMinMSE;          // The biggest Mean Squared Error required for training to stop
     int maxTrainItNum = 100000; // for experiments
+
+    double mMSESpeed;  // Relative change in Mean Squared Error at latest mseReduceIterations iterations
+    double minMSESpeed;      // The biggerst MSE Speed required for training to stop (stabilization detection)
+    double lastMSE;
 }

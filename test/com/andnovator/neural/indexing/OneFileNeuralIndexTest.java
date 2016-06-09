@@ -69,7 +69,7 @@ public class OneFileNeuralIndexTest {
         //
 
         OneFileNeuralIndex fileNIndex = new OneFileNeuralIndex();
-        fileNIndex.setNetworkMinMSE(4.2);
+        fileNIndex.setNetworkMinMSE(0.1);
 
         ArrayList<String> allWordsLst = new ArrayList<>(allFilesWords);
         Assert.assertTrue( fileNIndex.trainIndex(wordsMapOneFile, allWordsLst) );
@@ -267,6 +267,6 @@ public class OneFileNeuralIndexTest {
 
     @After
     public void tearDown() throws Exception {
-        Assert.assertEquals(0, totalExpectationsFailed);
+        Assert.assertEquals("Expectations failed:", 0, totalExpectationsFailed);
     }
 }
