@@ -18,7 +18,10 @@ import java.util.stream.Collectors;
  */
 public class FileLemmatizationUtils {
     public static List<String> loadFileLemms(String filePath) throws IOException {
-        String fileText = new String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8);
+        return loadFileLemms(Paths.get(filePath));
+    }
+    public static List<String> loadFileLemms(Path filePath) throws IOException {
+        String fileText = new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8);
         //fileText = fileText.replaceAll(System.lineSeparator()," ");
         Document doc = new Document(fileText);
         List<String> fileLemms = new LinkedList<>();
@@ -32,10 +35,13 @@ public class FileLemmatizationUtils {
     }
 
     public static List<String> loadFileLemms(String filePath, boolean useLemmatizator) throws IOException {
+        return loadFileLemms(Paths.get(filePath), useLemmatizator);
+    }
+    public static List<String> loadFileLemms(Path filePath, boolean useLemmatizator) throws IOException {
         if (useLemmatizator) {
             return loadFileLemms(filePath);
         }
-        return Arrays.asList(new String(Files.readAllBytes(Paths.get(filePath)), StandardCharsets.UTF_8)
+        return Arrays.asList(new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8)
                 .replaceAll(System.lineSeparator(), " ")
                 .replaceAll("\\p{Punct}", " ")
                 .replaceAll("[\t]+", " ")

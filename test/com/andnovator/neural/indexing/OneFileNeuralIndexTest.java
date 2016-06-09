@@ -75,7 +75,7 @@ public class OneFileNeuralIndexTest {
         Assert.assertTrue( fileNIndex.trainIndex(wordsMapOneFile, allWordsLst) );
         wordsMapOneFile.forEach( (word, posFreqPair) -> {
             System.out.println("For word: " + word);
-            int[] resArr = fileNIndex.wordSearch(word, true);
+            int[] resArr = fileNIndex.wordSearchNormal(word, true);
             System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
             expectEquals(posFreqPair.getPos(), resArr[0]);
             expectEquals(posFreqPair.getFreq(), resArr[1]);
@@ -114,7 +114,7 @@ public class OneFileNeuralIndexTest {
         allWords.add("food");          // 20
         for (String word : allWords) {
             System.out.println("For word: " + word);
-            resArr = fileNIndex.wordSearch(word, true);
+            resArr = fileNIndex.wordSearchNormal(word, true);
             System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
         }
     }
@@ -162,7 +162,7 @@ public class OneFileNeuralIndexTest {
         int[] resArr;
         for (String word : allWords) {
             System.out.println("For word: " + word);
-            resArr = fileNIndex.wordSearch(word, true);
+            resArr = fileNIndex.wordSearchNormal(word, true);
             System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
         }
 //        OneFileNeuralIndex fileNIndex2 = new OneFileNeuralIndex();
@@ -172,7 +172,7 @@ public class OneFileNeuralIndexTest {
 //        int[] resArr;
 //        for (String word : allWords) {
 //            System.out.println("For word: " + word);
-//            resArr = fileNIndex2.wordSearch(word, true);
+//            resArr = fileNIndex2.wordSearchNormal(word, true);
 //            System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
 //        }
         String date = SDF_YMD_HMS.format(new Date());

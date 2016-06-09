@@ -1,15 +1,16 @@
 package com.andnovator.neural.indexing;
 
 import com.andnovator.neural.network.NeuralNetwork;
+import com.andnovator.utils.FileLemmatizationUtils;
+import edu.stanford.nlp.simple.Sentence;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
 
@@ -21,13 +22,16 @@ public class FilesIndex {
     private List<Path> filesPath = Collections.emptyList();
     List<OneFileNeuralIndex> fileIndexNILst = new ArrayList<>();
     Set<String> allFileWords = new HashSet<>();
-    Set<String> allWords;
+    Set<String> allWords = new HashSet<>();
+    private List<String> allWordsLst;
     private List<Set<String>> wordsByFile;
 
     private int wordMaxLength = 20;
-    static private final int bitsForChar = 8;
+    static protected final int bitsForChar = 5;
     private int inputsNum = wordMaxLength * bitsForChar;
     private int maxFileNum = 3;
+
+    private int filesIndexedNum;
 
     private int outputBitsNum = maxFileNum + 1;
 
@@ -41,10 +45,10 @@ public class FilesIndex {
         this.filesIndexNN = filesIndexNN;
         allWords = new HashSet<>();
         allWords.add("nebulous");      // 1
-        allWords.add("scare");         // 2
+        allWords.add("peregrinate");   // 2
         allWords.add("rhythm");        // 3
         allWords.add("brief");         // 4
-        allWords.add("flash");         // 5
+        allWords.add("kickshaw");      // 5
         allWords.add("evanescent");    // 6
         allWords.add("hum");           // 7
         allWords.add("sloppy");        // 8
@@ -55,10 +59,10 @@ public class FilesIndex {
         allWords.add("duck");          // 13
         allWords.add("makeshift");     // 14
         allWords.add("intend");        // 15
-        allWords.add("distance");      // 16
+        allWords.add("cicisbeo");      // 16
         allWords.add("remarkable");    // 17
         allWords.add("thoughtless");   // 18
-        allWords.add("hat");           // 19
+        allWords.add("billow");        // 19
         allWords.add("food");          // 20
         updateNetworkParams();
     }
@@ -72,7 +76,10 @@ public class FilesIndex {
 
     }
 
-
+    private void createNINetwork(double minMSE) {
+        filesIndexNN = new NeuralNetwork(inputsNum,outputBitsNum,3,inputsNum+8);
+        filesIndexNN.setMinMSE(defaultNetworkMinMSE);
+    }
     private void createNINetwork(int maxWordLength) {
         setMaxWordLength(maxWordLength);
         filesIndexNN = new NeuralNetwork(inputsNum,outputBitsNum,3,inputsNum+8);
@@ -117,41 +124,47 @@ public class FilesIndex {
         }
     }
 
-    public void indexFiles(String dirPathStr) throws IOException {
-        Path dirPath = Paths.get(dirPathStr);
+    public void indexDir(String dirPathStr) throws IOException {
+        indexDir(Paths.get(dirPathStr));
+    }
+    public void indexDir(Path dirPath) throws IOException {
+        if (!Files.exists(dirPath) || !Files.isDirectory(dirPath)) {
+            throw new FileNotFoundException("Input dir not exist or path incorrect. Got: "+dirPath);
+        }
         Set<String> plainTxtExt = new HashSet<>();
         plainTxtExt.add(".txt");
         plainTxtExt.add(".log");
         plainTxtExt.add(".xml");
         plainTxtExt.add(".html");
         plainTxtExt.add(".htm");
-        if (Files.exists(dirPath) && Files.isDirectory(dirPath)) {
-            filesPath = Files.walk(dirPath)
-                    .filter(p -> plainTxtExt
-                            .contains(p.toString().toLowerCase().substring(p.toString().lastIndexOf('.'))))
-                    .collect(toList());
-        } /*else {
-            throw exception...
-        }*/
-
+        filesPath = Files.walk(dirPath)
+                .filter(p -> !Files.isDirectory(p))
+                // TODO: If add support files without extension, need change last filter below
+                .filter(p -> p.toString().contains("."))
+                .filter(p -> plainTxtExt
+                        .contains(p.toString().toLowerCase().substring(p.toString().lastIndexOf('.'))))
+                .collect(toList());
+        filesIndexedNum = filesPath.size();
+        for (Path filepath : filesPath) {
+            allFileWords.addAll(FileLemmatizationUtils.loadFileLemms(filepath));
+        }
+        allWords.addAll(allFileWords);
+        allWordsLst = new ArrayList<>(allWords);
         Map<String, PosFreqPair> wordsMapOneFile;
-        OneFileNeuralIndex oneFileNI = new OneFileNeuralIndex();
+        OneFileNeuralIndex oneFileNI;
+        wordsByFile = new ArrayList<>(filesIndexedNum);
 
-        List<String > allWordsLst = new ArrayList<>();
-        wordsByFile = new ArrayList<>(filesPath.size());
+        setMaxWordLength(Math.max(OneFileNeuralIndex.maxStrLengthInLst(allWords), wordMaxLength));
 
         for (Path path : filesPath) {
-            wordsMapOneFile = IndexingFileLoader.loadFile(path.toString());
-            allFileWords.addAll(wordsMapOneFile.keySet());
-            allWords.addAll(wordsMapOneFile.keySet());
-            wordsByFile.add(wordsMapOneFile.keySet());
-//            if ((ThreadLocalRandom.current().nextInt(10)>7) || (allWordsLst.isEmpty())) {
-//                allWordsLst.clear();
-//                allWordsLst.addAll(allWords);
-//            }
+            wordsMapOneFile = IndexingFileLoader.loadFile(path);
+            Set<String> wordsSet = wordsMapOneFile.keySet();
+            wordsByFile.add(wordsSet);
             oneFileNI = new OneFileNeuralIndex();
-            oneFileNI.setNetworkMinMSE(0.01);
+            oneFileNI.setNetworkMinMSE(0.1);
+            // Warning: trainIndex shuffle input allWordsList!!!!
             oneFileNI.trainIndex(wordsMapOneFile, allWordsLst);
+            addFileNI(oneFileNI);
         }
 
         // Now train big net
@@ -159,25 +172,72 @@ public class FilesIndex {
         List<List<Double>> trainingSample = new ArrayList<>(wordsToFeed.size());
 
         for (String word : allFileWords) {
-            wordsToFeed.add(oneFileNI.strToDoubleBits(word));
+            wordsToFeed.add(OneFileNeuralIndex.strToDoubleBitArrList(word, inputsNum));
             trainingSample.add(findFilesForWord(word));
-
         }
 
-
-        filesIndexNN = new NeuralNetwork(inputsNum, outputBitsNum, 3, inputsNum+6);
+        createNINetwork(networkMinMSE);
         filesIndexNN.Train(wordsToFeed, trainingSample);
     }
-
     private List<Double> findFilesForWord(String word) {
-        return IntStream.range(0, filesPath.size())
+        List<Double> res = new ArrayList<>();
+        res.add(1.);
+        res.addAll(wordsByFile.stream().map(fileWords -> fileWords.contains(word) ? +1. : -1.).collect(Collectors.toList()));
+        for (int i = filesIndexedNum; i <maxFileNum; ++i ) {
+            res.add(-1.);
+        }
+        return res;
+        /*return IntStream.range(0, filesIndexedNum)
                 // если в файле #fileIndex содержится слово word - то +1, иначе -1
                 .map( fileIndex -> wordsByFile.get(fileIndex).contains(word) ? +1 : -1)
                 .mapToObj(Double::valueOf)
-                .collect(toList());
+                .collect(toList());*/
     }
 
     public void addFileNI(OneFileNeuralIndex niNN) {
         fileIndexNILst.add(niNN);
     }
+
+
+    public Map<Path, PosFreqPair> wordSearchNormal(String word){
+        return wordSearchNormal(word, false);
+    }
+    public Map<Path, PosFreqPair> wordSearchNormal(String word, boolean isResPrint){
+        Map<Path, PosFreqPair> resMap = new HashMap<>();
+        List<Double> resArrLst = wordSearchNetResponce(word, isResPrint);
+        if (resArrLst != null) {
+            int niInd = 0;
+            int[] ressArr;
+            for (Double respDouble : resArrLst.subList(1, filesIndexedNum)) {
+                if (OneFileNeuralIndex.isDoubleBitOne(respDouble)) {
+                    ressArr = fileIndexNILst.get(niInd).wordSearchNormal(word, isResPrint);
+                    if (ressArr[0] != -1) {
+                        // Fixme: maybe not arraylist, so maybe not .get but iterator
+                        resMap.put(filesPath.get(niInd), new PosFreqPair(ressArr[0], ressArr[1]));
+                    }
+                }
+                ++niInd;
+            }
+        }
+        return resMap;
+    }
+
+    List<Double> wordSearchNetResponce(String word) {
+        return wordSearchNetResponce(word, false);
+    }
+    List<Double> wordSearchNetResponce(String word, boolean isResPrint) {
+        List<Double> searchWordBytes = OneFileNeuralIndex.strToDoubleBitArrList(word, inputsNum);
+        if (filesIndexNN != null) {
+            return filesIndexNN.GetNetResponse(searchWordBytes, isResPrint);
+        } else {
+            return null;
+        }
+    }
+
+    public Map<Path, PosFreqPair> wordSearch(String word) { return wordSearch(word, false); }
+    public Map<Path, PosFreqPair> wordSearch(String word, boolean isResPrint) {
+        String normalWord = new Sentence(word).lemma(0);
+        return wordSearchNormal(normalWord, isResPrint);
+    }
+
 }

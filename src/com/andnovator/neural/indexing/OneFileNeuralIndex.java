@@ -16,7 +16,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class OneFileNeuralIndex {
     private NeuralNetwork neuroIndexNetwork;
     private int wordMaxLength = 15;
-    static private final int bitsForChar = 5;
+    static private final int bitsForChar = FilesIndex.bitsForChar;
     static private final int mostSignificantBit = 1 << (bitsForChar - 1);
     private int inputsNum = wordMaxLength * bitsForChar;
     private int outputPosBitsNum = 16;
@@ -107,7 +107,7 @@ public class OneFileNeuralIndex {
         return binarySB.toString();
     }
 
-    static List<Double> strToDoubleBitArrList(String str, int bitsNum) {
+    public static List<Double> strToDoubleBitArrList(String str, int bitsNum) {
         if (bitsNum < bitsForChar*str.length()) {
             System.out.println("Bits num change to str size ("+bitsForChar*str.length()+")");
         }
@@ -272,7 +272,8 @@ public class OneFileNeuralIndex {
         return randomWords;
     }
 
-    //FIXME: use staic constant, for example - NOT in code
+    // FIXME: use staic constant, for example - NOT in code
+    // Warning: trainIndex shuffle input allWordsList!!!!
     public boolean trainIndex(Map<String, PosFreqPair> itemWordsMap, List<String> allWordsList, boolean recreateNetwork) {
 //        return trainIndex(itemWordsMap, allWordsList, 15);
         return trainIndex(itemWordsMap, allWordsList, maxStrLengthInLst(allWordsList), recreateNetwork);
@@ -295,34 +296,33 @@ public class OneFileNeuralIndex {
         }
         int allWordsNum = allWordsList.size();
         // FIXME: there should be correct constant, it is taken by words num
-//        final int someConstantOtherWordFeedNum = 6;
-//        if (itemWordsMap.size() >= allWordsList.size()) {
-//            for (String otherWord : generateRandWordList(someConstantOtherWordFeedNum)) {
-//                wordsToFeed.add(strToDoubleBits(otherWord));
-//                trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
-//            }
-//        } else {
-//            Collections.shuffle(allWordsList);
-//            int wordsAdded = 0;
-//            for (String otherWord : allWordsList) {
-//                if (itemWordsMap.get(otherWord) == null) {
-//                    if (wordsAdded>=someConstantOtherWordFeedNum) { break; }
-//                    wordsToFeed.add(strToDoubleBits(otherWord));
-//                    trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
-//                    ++wordsAdded;
-//                }
-//            }
-//        }
+        final int someConstantOtherWordFeedNum = 4;
+        if (itemWordsMap.size() >= allWordsList.size()) {
+            for (String otherWord : generateRandWordList(someConstantOtherWordFeedNum)) {
+                wordsToFeed.add(strToDoubleBits(otherWord));
+                trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
+            }
+        } else {
+            Collections.shuffle(allWordsList);
+            int wordsAdded = 0;
+            for (String otherWord : allWordsList) {
+                if (itemWordsMap.get(otherWord) == null) {
+                    if (wordsAdded>=someConstantOtherWordFeedNum) { break; }
+                    wordsToFeed.add(strToDoubleBits(otherWord));
+                    trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
+                    ++wordsAdded;
+                }
+            }
+        }
         return neuroIndexNetwork.Train(wordsToFeed, trainingSample);
     }
-    public int[] wordSearch(String word){
-        return wordSearch(word, false);
+    public int[] wordSearchNormal(String word){
+        return wordSearchNormal(word, false);
     }
-    public int[] wordSearch(String word, boolean isResPrint){
+    public int[] wordSearchNormal(String word, boolean isResPrint){
         int[] resArr = {-1, -1};
         List<Double> resArrLst = wordSearchNetResponce(word, isResPrint);
         if (resArrLst != null) {
-            // FIXME: there must not be just ".round"!
             if ( isDoubleBitOne(resArrLst.get(0)) ) {
                 try {
                     resArr[0] = bitsListToInt(resArrLst.subList(1, outputPosBitsNum + 1));
@@ -334,10 +334,10 @@ public class OneFileNeuralIndex {
         }
         return resArr;
     }
-    List<Double> wordSearchNetResponceNormal(String word) { return wordSearchNetResponceNormal(word, false); }
-    List<Double> wordSearchNetResponceNormal(String word, boolean isResPrint) {
+    int[] wordSearch(String word) { return wordSearch(word, false); }
+    int[] wordSearch(String word, boolean isResPrint) {
         String normalWord = new Sentence(word).lemma(0);
-        return wordSearchNetResponce(normalWord, isResPrint);
+        return wordSearchNormal(normalWord, isResPrint);
     }
     List<Double> wordSearchNetResponce(String word) {
         return wordSearchNetResponce(word, false);
