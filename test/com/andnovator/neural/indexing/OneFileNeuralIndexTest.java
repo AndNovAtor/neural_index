@@ -1,9 +1,10 @@
 package com.andnovator.neural.indexing;
 
 import com.andnovator.neural.network.NetworkFileSerializer;
-import com.andnovator.neural.network.NeuralNetwork;
 import com.andnovator.utils.FileLemmatizationUtils;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -14,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
+ * test for Indexing of contents of one file
  * Created by novator on 10.05.2016.
  */
 public class OneFileNeuralIndexTest {
@@ -21,10 +23,19 @@ public class OneFileNeuralIndexTest {
     private String defaultFilePath = "neural_index.txt";
     private String defaultSerFileName = "neural_index";
     private String defaultSerFileExt = ".ser";
+    private String defaultTextFileExt = ".txt";
     private String defaultSerFilePath = defaultSerFileName+defaultSerFileExt;
     private String defaultSeparator = "; ";
     public static final String DATE_FORMAT_NOW = "yyyy-MM-dd_HH.mm.ss";
     public static final SimpleDateFormat SDF_YMD_HMS = new SimpleDateFormat(DATE_FORMAT_NOW);
+
+
+    private int totalExpectationsFailed = 0;
+
+    @Before
+    public void setUp() throws Exception {
+        totalExpectationsFailed = 0;
+    }
 
     @Test
     public void indexOneFileTest() throws Exception {
@@ -58,16 +69,17 @@ public class OneFileNeuralIndexTest {
         //
 
         OneFileNeuralIndex fileNIndex = new OneFileNeuralIndex();
-        fileNIndex.setNetworkMinMSE(0.01);
+        fileNIndex.setNetworkMinMSE(0.1);
 
         ArrayList<String> allWordsLst = new ArrayList<>(allFilesWords);
         Assert.assertTrue( fileNIndex.trainIndex(wordsMapOneFile, allWordsLst) );
-        int[] resArr;
-        for (String word : allWordsLst) {
+        wordsMapOneFile.forEach( (word, posFreqPair) -> {
             System.out.println("For word: " + word);
-            resArr = fileNIndex.wordSearch(word, true);
+            int[] resArr = fileNIndex.wordSearch(word, true);
             System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
-        }
+            expectEquals(posFreqPair.getPos(), resArr[0]);
+            expectEquals(posFreqPair.getFreq(), resArr[1]);
+        });
 
         new NetworkFileSerializer(defaultSerFileName+"_"+ Paths.get(filePath).getFileName() +defaultSerFileExt).seralizeNetwork(fileNIndex.getNeuroIndexNetwork());
 //        new NetworkFileSerializer(defaultFilePath).saveNetwork(fileNIndex.getNeuroIndexNetwork());
@@ -135,15 +147,12 @@ public class OneFileNeuralIndexTest {
         //File:
         List<String> oneFileWords = allWords.subList(0,10);
         List<String> secFileWords = allWords.subList(8,18);
-        List<String> allFilesWords;
-        // All files words:
-        allFilesWords = new ArrayList<>(allWords.subList(0,18));
         // File words hashmap
         HashMap<String, PosFreqPair> fileWordsMap2 = new HashMap<>(secFileWords.size());
         for (int i = 0; i < secFileWords.size(); ++i) {
             fileWordsMap2.put(secFileWords.get(i), new PosFreqPair(i,1));
         }
-        /*HashMap<String, PosFreqPair> fileWordsMap1 = new HashMap<>(oneFileWords.size());
+        HashMap<String, PosFreqPair> fileWordsMap1 = new HashMap<>(oneFileWords.size());
         for (int i = 0; i < oneFileWords.size(); ++i) {
             fileWordsMap1.put(oneFileWords.get(i), new PosFreqPair(i,1));
         }
@@ -155,19 +164,20 @@ public class OneFileNeuralIndexTest {
             System.out.println("For word: " + word);
             resArr = fileNIndex.wordSearch(word, true);
             System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
-        }*/
-        OneFileNeuralIndex fileNIndex2 = new OneFileNeuralIndex();
-        fileNIndex2.loadSerializedNetwork(defaultSerFileName+"2"+defaultSerFileExt);
-        fileNIndex2.setNetworkMinMSE(0.005);
-        Assert.assertTrue( fileNIndex2.trainIndex(fileWordsMap2, allWords, false) );
-        int[] resArr;
-        for (String word : allWords) {
-            System.out.println("For word: " + word);
-            resArr = fileNIndex2.wordSearch(word, true);
-            System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
         }
-        new NetworkFileSerializer(defaultSerFileName+"_"+ SDF_YMD_HMS.format(new Date()) +defaultSerFileExt).seralizeNetwork(fileNIndex2.getNeuroIndexNetwork());
-//        new NetworkFileSerializer(defaultFilePath).saveNetwork(fileNIndex.getNeuroIndexNetwork());
+//        OneFileNeuralIndex fileNIndex2 = new OneFileNeuralIndex();
+//        fileNIndex2.loadSerializedNetwork(defaultSerFileName+"2"+defaultSerFileExt);
+//        fileNIndex2.setNetworkMinMSE(0.005);
+//        Assert.assertTrue( fileNIndex2.trainIndex(fileWordsMap2, allWords, false) );
+//        int[] resArr;
+//        for (String word : allWords) {
+//            System.out.println("For word: " + word);
+//            resArr = fileNIndex2.wordSearch(word, true);
+//            System.out.println(" pos.: " + resArr[0] + "; freq.: " + resArr[1]);
+//        }
+        String date = SDF_YMD_HMS.format(new Date());
+        new NetworkFileSerializer(defaultSerFileName+"_"+ date +defaultSerFileExt).seralizeNetwork(fileNIndex.getNeuroIndexNetwork());
+//        new NetworkFileSerializer(defaultFilePath+"_"+date+defaultTextFileExt).saveNetwork(fileNIndex.getNeuroIndexNetwork());
 //        return new Pair<>(fileNIndex.getNeuroIndexNetwork(), fileNIndex.wordSearchNetResponce(allWords.get(18)));
     }
 
@@ -198,11 +208,6 @@ public class OneFileNeuralIndexTest {
         } // catch (FileNotFoundException e)
         //Below - surround with catch IOException
         System.out.println(new String(Files.readAllBytes(Paths.get("file.txt")), StandardCharsets.UTF_8));
-    }
-
-    @Test
-    public void testCorelNLP() throws Exception {
-        DocumentWords documentWords = IndexingFileLoader.loadDocument("file.txt");
     }
 
     @Test
@@ -250,5 +255,18 @@ public class OneFileNeuralIndexTest {
                 System.out.println(" Something: " + filePath);
             }
         });
+    }
+
+    void expectEquals(int expected, int actual) {
+        if (expected != actual) {
+            System.out.flush();
+            System.err.println("ERROR: expected: " + expected + "; actual: " + actual);
+            totalExpectationsFailed += 1;
+        }
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        Assert.assertEquals("Expectations failed:", 0, totalExpectationsFailed);
     }
 }

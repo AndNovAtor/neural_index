@@ -10,12 +10,14 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
+ * Indexing of contents of one file
  * Created by novator on 03.05.2016.
  */
 public class OneFileNeuralIndex {
     private NeuralNetwork neuroIndexNetwork;
     private int wordMaxLength = 15;
-    static private final int bitsForChar = 8;
+    static private final int bitsForChar = 5;
+    static private final int mostSignificantBit = 1 << (bitsForChar - 1);
     private int inputsNum = wordMaxLength * bitsForChar;
     private int outputPosBitsNum = 16;
     private int outputFreqBitsNum = 16;
@@ -47,7 +49,9 @@ public class OneFileNeuralIndex {
 
     private void createNINetwork(int maxWordLength) {
         setMaxWordLength(maxWordLength);
-        neuroIndexNetwork = new NeuralNetwork(inputsNum,outputBitsNum,3,inputsNum+8);
+//        int numOfNeuronsInHiddenLayers = inputsNum + 8;
+        int numOfNeuronsInHiddenLayers = inputsNum*3/2;
+        neuroIndexNetwork = new NeuralNetwork(inputsNum,outputBitsNum,3, numOfNeuronsInHiddenLayers);
         neuroIndexNetwork.setMinMSE(defaultNetworkMinMSE);
     }
     private void createNINetwork(int maxWordLength, double minMSE) {
@@ -81,7 +85,7 @@ public class OneFileNeuralIndex {
         }
     }
     public void setNetworkMinMSE(double minMSE) {
-        if ((minMSE > 0) && (minMSE < 0.5)) {
+        if ((minMSE > 0) && (minMSE < 50)) {
             if (neuroIndexNetwork != null) {
                 neuroIndexNetwork.setMinMSE(minMSE);
             }
@@ -104,20 +108,22 @@ public class OneFileNeuralIndex {
     }
 
     static List<Double> strToDoubleBitArrList(String str, int bitsNum) {
-        if (bitsNum < 8*str.length()) {
-            System.out.println("Bits num change to str size ("+8*str.length()+")");
+        if (bitsNum < bitsForChar*str.length()) {
+            System.out.println("Bits num change to str size ("+bitsForChar*str.length()+")");
         }
-        byte[] barr = str.getBytes(StandardCharsets.US_ASCII);
+        byte[] barr = str.toUpperCase().getBytes(StandardCharsets.US_ASCII);
         List<Double> resArr = new ArrayList<>();
-        if (bitsNum > 8*str.length()) {
-            for (int i=8*str.length(); i<bitsNum; ++i) {
+        if (bitsNum > bitsForChar*str.length()) {
+            for (int i=bitsForChar*str.length(); i<bitsNum; ++i) {
                 resArr.add(-1.);
             }
         }
         for (byte b : barr) {
-            int val = b;
-            for (int i = 0; i < 8; ++i) {
-                resArr.add((val & 128) == 0 ? -1. : 1.);
+            // compress each char: assuming it is ascii letter (starting 0x40) uppercase (ending 0x59)
+            int val = Math.max(0, Math.min(b, 0x59) - 0x40);
+
+            for (int i = 0; i < bitsForChar; ++i) {
+                resArr.add((val & mostSignificantBit) == 0 ? -1. : 1.);
                 val <<= 1;
             }
         }
@@ -289,25 +295,24 @@ public class OneFileNeuralIndex {
         }
         int allWordsNum = allWordsList.size();
         // FIXME: there should be correct constant, it is taken by words num
-        final int someConstantOtherWordFeedNum = 6;
-        if (itemWordsMap.size() >= allWordsList.size()) {
-            for (String otherWord : generateRandWordList(someConstantOtherWordFeedNum)) {
-                wordsToFeed.add(strToDoubleBits(otherWord));
-                trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
-            }
-        } else {
-            // Fixme - needed clever random
-            Collections.shuffle(allWordsList);
-            int wordsAdded = 0;
-            for (String otherWord : allWordsList) {
-                if (itemWordsMap.get(otherWord) == null) {
-                    if (wordsAdded>=someConstantOtherWordFeedNum) { break; }
-                    wordsToFeed.add(strToDoubleBits(otherWord));
-                    trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
-                    ++wordsAdded;
-                }
-            }
-        }
+//        final int someConstantOtherWordFeedNum = 6;
+//        if (itemWordsMap.size() >= allWordsList.size()) {
+//            for (String otherWord : generateRandWordList(someConstantOtherWordFeedNum)) {
+//                wordsToFeed.add(strToDoubleBits(otherWord));
+//                trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
+//            }
+//        } else {
+//            Collections.shuffle(allWordsList);
+//            int wordsAdded = 0;
+//            for (String otherWord : allWordsList) {
+//                if (itemWordsMap.get(otherWord) == null) {
+//                    if (wordsAdded>=someConstantOtherWordFeedNum) { break; }
+//                    wordsToFeed.add(strToDoubleBits(otherWord));
+//                    trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
+//                    ++wordsAdded;
+//                }
+//            }
+//        }
         return neuroIndexNetwork.Train(wordsToFeed, trainingSample);
     }
     public int[] wordSearch(String word){

@@ -1,8 +1,13 @@
 package com.andnovator.neural.network;
 
 /**
+ * Neural network with variable number of layers and neurons per layer
+ *
+ * Can be trained with Train depending on requested value of MSE
  * Created by novator on 01.11.2015.
  */
+
+import com.andnovator.utils.Stopwatch;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,6 +39,10 @@ import static java.util.stream.Collectors.toList;
  */
 
 public class NeuralNetwork {
+
+    private final int debugEachIterations = 100;
+    private final int mseReduceIterations = 50;
+
     /**
      * A Neural Network constructor.
      * - Description:    A template constructor. T is a data type, all the nodes will operate with. Create a neural network by providing it with:
@@ -53,7 +62,9 @@ public class NeuralNetwork {
     public NeuralNetwork(int inInputs, int inOutputs, int inNumOfHiddenLayers, int inNumOfNeuronsInHiddenLayers, String inTypeOfNeuralNetwork) {
         if ((inInputs > 0) && (inOutputs > 0)) {
             mMinMSE = 0.01;
-            mMeanSquaredError = 0;
+            minMSESpeed = 0.01;
+            mMSE = 0;
+            lastMSE = 0;
             inputsNum = inInputs;
             outputsNum = inOutputs;
             neuronsPerHidden = inNumOfNeuronsInHiddenLayers;
@@ -138,27 +149,44 @@ public class NeuralNetwork {
 
     public boolean Train(List<List<Double>> inData, List<List<Double>> inTarget) {
         int iIteration = 0;
+        Stopwatch stopwatch = new Stopwatch();
+        System.out.printf("%s| Start training (%d training samples) network with %d:inputs, %d:outputs, %d:hidden x %d:layers and LearningRate = %g%n",
+                Stopwatch.formatNow(), inData.size(), inputsNum, outputsNum, neuronsPerHidden, hiddenLayersNum, Neuron.LearningRate);
         while (true) {
             ++iIteration;
             for (int i = 0; i < inData.size(); i++) {
                 mTrainingAlgoritm.Train(inData.get(i), inTarget.get(i));
             }
             double MSE = this.getMSE();
-
-            // debug output
-            if (iIteration % 1000 == 0) {
-                System.out.println("At " + iIteration + " iteration MSE: " + MSE + " > minMSE (" + mMinMSE + "), continue...");
-            }
             this.resetMSE();
             if (MSE < mMinMSE) {
-                System.out.println("At " + iIteration + " iteration MSE: " + MSE + " was achieved. SUCCESS");
+                System.out.printf("%s| At %d iteration MSE: %.4g was achieved. SUCCESS%n", Stopwatch.formatNow(), iIteration, MSE);
                 return true;
             }
+
+            if (iIteration % mseReduceIterations == 0) {
+                if (lastMSE != 0) {
+                    mMSESpeed = Math.abs(lastMSE - MSE) / MSE;
+                    if (mMSESpeed < minMSESpeed) {
+                        System.out.printf("%s| At %d iteration MSE: %.4g was achieved. SUCCESS%n", Stopwatch.formatNow(), iIteration, MSE);
+                        return true;
+                    }
+                }
+                lastMSE = MSE;
+            }
+
             if (iIteration+1>maxTrainItNum) {
-                System.out.println("At " + (iIteration) + " iteration MSE was: " + MSE + " > minMSE (" + mMinMSE + "); but it's max iteration");
+                System.out.printf("%s| At %d iteration MSE was: %.4g > minMSE (%.4g); but it's max iteration%n", Stopwatch.formatNow(), iIteration, MSE, mMinMSE);
                 System.out.println("Training was stopped.");
                 System.out.println("Error - training is failure!");
                 return false;
+            }
+
+            // debug output
+            if (iIteration % debugEachIterations == 0) {
+                double nItersTimeSec = ((double) stopwatch.newLap()) / 1000.0;
+                double iterPerSec = ((double) debugEachIterations) / nItersTimeSec;
+                System.out.printf("%s| At %d iteration MSE: %.4g > minMSE (%.4g), MSE speed %.4g, continue... (%.2g iter/sec)%n", Stopwatch.formatNow(), iIteration, MSE, mMinMSE, mMSESpeed, iterPerSec);
             }
         }
     }
@@ -194,7 +222,7 @@ public class NeuralNetwork {
             }
 
 
-            if (printResults) { System.out.println("Net response is: {"); }
+            if (printResults) { System.out.print("Net response is: {"); }
             for (int indexOfOutputElements = 0; indexOfOutputElements < outputsNum; indexOfOutputElements++) {
 
 			/*
@@ -204,7 +232,7 @@ public class NeuralNetwork {
                 double res = this.GetOutputLayer().get(indexOfOutputElements).Fire();
                 netResponse.add(res);
 
-                if (printResults) { System.out.println("res: " + res); }
+                if (printResults) { System.out.print(res + "; "); }
 
 
             }
@@ -390,7 +418,7 @@ public class NeuralNetwork {
      */
 
     void addMSE(double inPortion) {
-        mMeanSquaredError += inPortion;
+        mMSE += inPortion;
     }
 
     /**
@@ -401,7 +429,7 @@ public class NeuralNetwork {
      */
 
     double getMSE() {
-        return mMeanSquaredError;
+        return mMSE;
     }
 
     /**
@@ -412,7 +440,8 @@ public class NeuralNetwork {
      */
 
     void resetMSE() {
-        mMeanSquaredError = 0;
+        mMSE = 0;
+        mMSESpeed = 0;
     }
 
     NeuronFactory mNeuronFactory;       /*!< Member, which is responsible for creating neurons @see SetNeuronFactory */
@@ -464,9 +493,9 @@ public class NeuralNetwork {
     }
 
     /**
-     *
-     * @param biasesWeights
-     * @param simpleNeuronWeights
+     * восстанавливает сеть по весам
+     * @param biasesWeights веса сдвиговых нейронов
+     * @param simpleNeuronWeights веса связей обычных нейронов
      * @throws IllegalArgumentException если размеры массивов некорректны
      */
     public void importNetworkWeights(List<Double> biasesWeights, List<Double> simpleNeuronWeights) throws IllegalArgumentException { // {
@@ -517,7 +546,11 @@ public class NeuralNetwork {
 
 
     int inputsNum, outputsNum, hiddenLayersNum, neuronsPerHidden; // Number of inputs, outputs, hidden layers and units in every hidden layer
-    double mMeanSquaredError;  // Mean Squared Error which is changing every iteration of the training
+    double mMSE;  // Mean Squared Error which is changing every iteration of the training
     double mMinMSE;          // The biggest Mean Squared Error required for training to stop
-    int maxTrainItNum = 60000;
+    int maxTrainItNum = 100000; // for experiments
+
+    double mMSESpeed;  // Relative change in Mean Squared Error at latest mseReduceIterations iterations
+    double minMSESpeed;      // The biggerst MSE Speed required for training to stop (stabilization detection)
+    double lastMSE;
 }
