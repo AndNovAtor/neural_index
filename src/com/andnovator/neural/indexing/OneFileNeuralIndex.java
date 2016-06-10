@@ -39,7 +39,15 @@ public class OneFileNeuralIndex {
         updateNetworkParams(posBitsNum, freqBitsNum);
     }
     public void loadSerializedNetwork(String filepath) throws IOException, ClassNotFoundException {
-        setNINetwork(new NetworkFileSerializer(filepath).deserializeNetwork(), outputPosBitsNum, outputFreqBitsNum);
+        loadSerializedNetwork(new NetworkFileSerializer(filepath));
+    }
+    public void loadSerializedNetwork(NetworkFileSerializer nfs) throws IOException, ClassNotFoundException {
+        setNINetwork(nfs.deserializeNetwork(), outputPosBitsNum, outputFreqBitsNum);
+    }
+    public static OneFileNeuralIndex loadSerializedIndex(NetworkFileSerializer nfs) throws IOException, ClassNotFoundException {
+        OneFileNeuralIndex ni = new OneFileNeuralIndex();
+        ni.loadSerializedNetwork(nfs);
+        return ni;
     }
     public static OneFileNeuralIndex loadSerializedIndex(String filepath) throws IOException, ClassNotFoundException {
         OneFileNeuralIndex ni = new OneFileNeuralIndex();

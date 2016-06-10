@@ -66,7 +66,7 @@ public class FilesIndex {
         allWords.add("food");          // 20
         updateNetworkParams();
     }
-    private void setNINetwork(NeuralNetwork neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
+    void setNINetwork(NeuralNetwork neuroIndexNetwork) {
         this.filesIndexNN = neuroIndexNetwork;
         updateNetworkParams();
     }
@@ -100,8 +100,7 @@ public class FilesIndex {
         inputsNum = wordMaxLength * bitsForChar;
     }
 
-    @Deprecated
-    public NeuralNetwork getFilesIndexNetwork() { return filesIndexNN; }
+    NeuralNetwork getFilesIndexNetwork() { return filesIndexNN; }
     void setFilesIndexNetwork(NeuralNetwork neuroIndexNetwork, int posBitsNum, int freqBitsNum) {
         this.filesIndexNN = neuroIndexNetwork;
         updateNetworkParams();
@@ -123,6 +122,14 @@ public class FilesIndex {
             networkMinMSE = minMSE;
         }
     }
+
+    void setMaxFileNum(int maxFileNum) { this.maxFileNum = maxFileNum; }
+    void setFilesIndexedNum(int filesIndexedNum) { this.filesIndexedNum = filesIndexedNum; }
+    public int getMaxFileNum() { return maxFileNum; }
+    public int getFilesIndexedNum() { return filesIndexedNum; }
+
+    public List<OneFileNeuralIndex> getFileIndexNILst() { return fileIndexNILst; }
+    public void setFileIndexNILst(List<OneFileNeuralIndex> fileIndexNILst) { this.fileIndexNILst = fileIndexNILst; }
 
     public void indexDir(String dirPathStr) throws IOException {
         indexDir(Paths.get(dirPathStr));
