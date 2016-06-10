@@ -35,7 +35,7 @@ public class FilesIndex {
 
     private int outputBitsNum = maxFileNum + 1;
 
-    static private double defaultNetworkMinMSE = 1e-2;
+    static private double defaultNetworkMinMSE = 3e-2;
     private double networkMinMSE = defaultNetworkMinMSE;
 
     public FilesIndex() {
@@ -76,14 +76,18 @@ public class FilesIndex {
 
     }
 
+    private void createNINetwork() {
+        filesIndexNN = new NeuralNetwork(inputsNum, outputBitsNum, 3, inputsNum + 8);
+        filesIndexNN.setMinMSE(networkMinMSE);
+    }
     private void createNINetwork(double minMSE) {
         filesIndexNN = new NeuralNetwork(inputsNum,outputBitsNum,3,inputsNum+8);
-        filesIndexNN.setMinMSE(defaultNetworkMinMSE);
+        filesIndexNN.setMinMSE(minMSE);
     }
     private void createNINetwork(int maxWordLength) {
         setMaxWordLength(maxWordLength);
         filesIndexNN = new NeuralNetwork(inputsNum,outputBitsNum,3,inputsNum+8);
-        filesIndexNN.setMinMSE(defaultNetworkMinMSE);
+        filesIndexNN.setMinMSE(networkMinMSE);
     }
     private void createNINetwork(int maxWordLength, double minMSE) {
         createNINetwork(maxWordLength);
@@ -127,6 +131,14 @@ public class FilesIndex {
     void setFilesIndexedNum(int filesIndexedNum) { this.filesIndexedNum = filesIndexedNum; }
     public int getMaxFileNum() { return maxFileNum; }
     public int getFilesIndexedNum() { return filesIndexedNum; }
+
+    public List<Path> getFilesPath() {
+        return filesPath;
+    }
+
+    public void setFilesPath(List<Path> filesPath) {
+        this.filesPath = filesPath;
+    }
 
     public List<OneFileNeuralIndex> getFileIndexNILst() { return fileIndexNILst; }
     public void setFileIndexNILst(List<OneFileNeuralIndex> fileIndexNILst) { this.fileIndexNILst = fileIndexNILst; }
@@ -182,8 +194,15 @@ public class FilesIndex {
             wordsToFeed.add(OneFileNeuralIndex.strToDoubleBitArrList(word, inputsNum));
             trainingSample.add(findFilesForWord(word));
         }
+        Collections.shuffle(allWordsLst);
+        for (String word : OneFileNeuralIndex.generateRandStrList(4)) {
+            wordsToFeed.add(OneFileNeuralIndex.strToDoubleBitArrList(word, inputsNum));
+            double[] dar = new double[outputBitsNum];
+            Arrays.fill(dar, -1.);
+            trainingSample.add(Arrays.stream(dar).boxed().collect(Collectors.toList()));
+        }
 
-        createNINetwork(networkMinMSE);
+        createNINetwork();
         filesIndexNN.Train(wordsToFeed, trainingSample);
     }
     private List<Double> findFilesForWord(String word) {
@@ -215,7 +234,7 @@ public class FilesIndex {
         if (resArrLst != null) {
             int niInd = 0;
             int[] ressArr;
-            for (Double respDouble : resArrLst.subList(1, filesIndexedNum)) {
+            for (Double respDouble : resArrLst.subList(1, filesIndexedNum + 1)) {
                 if (OneFileNeuralIndex.isDoubleBitOne(respDouble)) {
                     ressArr = fileIndexNILst.get(niInd).wordSearchNormal(word, isResPrint);
                     if (ressArr[0] != -1) {

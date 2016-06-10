@@ -504,9 +504,9 @@ public class NeuralNetwork {
             throw new IllegalArgumentException("NN loading is failed - input parameters is not same as NN object which invoked this loading");
         }
         final double maxWeight = mTrainingAlgoritm.getMaxAbsWeight();
-        simpleNeuronWeights.stream().filter(w -> Math.abs(w) > maxWeight).findFirst().ifPresent(w -> {
-            throw new IllegalArgumentException("NN loading is failed - all inner neuron weights should be in [-1; 1] but "+w+" found");
-        });
+//        simpleNeuronWeights.stream().filter(w -> Math.abs(w) > maxWeight).findFirst().ifPresent(w -> {
+//            throw new IllegalArgumentException("NN loading is failed - all inner neuron weights should be in [-1; 1] but "+w+" found");
+//        });
         setNetworkWeights(biasesWeights, simpleNeuronWeights);
     }
 

@@ -5,6 +5,7 @@ import com.andnovator.neural.network.NeuralNetwork;
 import edu.stanford.nlp.simple.Sentence;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -44,9 +45,14 @@ public class OneFileNeuralIndex {
     public void loadSerializedNetwork(NetworkFileSerializer nfs) throws IOException, ClassNotFoundException {
         setNINetwork(nfs.deserializeNetwork(), outputPosBitsNum, outputFreqBitsNum);
     }
-    public static OneFileNeuralIndex loadSerializedIndex(NetworkFileSerializer nfs) throws IOException, ClassNotFoundException {
+
+    public void loadSerializedNetwork(NetworkFileSerializer nfs, ObjectInputStream istream) throws IOException, ClassNotFoundException {
+        setNINetwork(nfs.deserializeNetwork(istream), outputPosBitsNum, outputFreqBitsNum);
+    }
+
+    public static OneFileNeuralIndex loadSerializedIndex(NetworkFileSerializer nfs, ObjectInputStream istream) throws IOException, ClassNotFoundException {
         OneFileNeuralIndex ni = new OneFileNeuralIndex();
-        ni.loadSerializedNetwork(nfs);
+        ni.loadSerializedNetwork(nfs, istream);
         return ni;
     }
     public static OneFileNeuralIndex loadSerializedIndex(String filepath) throws IOException, ClassNotFoundException {

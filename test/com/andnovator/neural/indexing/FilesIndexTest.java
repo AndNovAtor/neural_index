@@ -18,7 +18,7 @@ public class FilesIndexTest {
         fni.setNetworkMinMSE(0.1);
         fni.indexDir(dirPath);
         String word = "is";
-        Map<Path, PosFreqPair> filesWordPosMap = fni.wordSearch(word);
+        Map<Path, PosFreqPair> filesWordPosMap = fni.wordSearch(word, true);
         if (filesWordPosMap.isEmpty()) {
             System.out.println("Word '" + word + "' not found in dir: " + dirPath);
         } else {
@@ -30,9 +30,8 @@ public class FilesIndexTest {
 
     @Test
     public void bTest() throws Exception {
-        FilesIndex fni = new FilesIndex();
+        FilesIndex fni;
         fni = new FilesIndexSerializer(dirPath+"\\index.ser").deserialize();
-        fni.setNetworkMinMSE(0.01);
         String word = "is";
         Map<Path, PosFreqPair> filesWordPosMap = fni.wordSearch(word);
         if (filesWordPosMap.isEmpty()) {

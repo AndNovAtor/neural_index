@@ -132,9 +132,9 @@ public class NetworkFileSerializer {
         int hiddenLayersSize = istream.readInt();
         double minMSE = istream.readDouble();
         int maxTrainItNum = istream.readInt();
-        @SuppressWarnings("unchecked")
+//        @SuppressWarnings("unchecked")
         double[] biasWeights = (double[]) istream.readObject();
-        @SuppressWarnings("unchecked")
+//        @SuppressWarnings("unchecked")
         double[] simpleWeights = (double[]) istream.readObject();
         NeuralNetwork nn  = new NeuralNetwork(inputsNum, outputsNum, hiddenLayersNum, hiddenLayersSize);
         nn.importNetworkWeights(biasWeights, simpleWeights);
