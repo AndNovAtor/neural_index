@@ -11,6 +11,10 @@ import java.util.Map;
  */
 public class FilesIndexTest {
     String dirPath = "C:\\Users\\novator\\Desktop\\ind";
+    String defaultIndFileOnlyName = ".nindex";
+    String defaultIndFileExt = ".ser";
+    String defaultIndFilename = defaultIndFileOnlyName + defaultIndFileExt;
+
 
     @Test
     public void filesIndexTrainTest() throws Exception {
@@ -25,13 +29,13 @@ public class FilesIndexTest {
             System.out.println("Word '" + word + "' was found in files:");
             filesWordPosMap.forEach((k, v) -> System.out.println(k + ": Pos - " + v.getPos()+", freq - "+v.getFreq()));
         }
-        new FilesIndexSerializer(dirPath+"\\index.ser").serialize(fni);
+        new FilesIndexSerializer(dirPath + "\\" + defaultIndFilename).serialize(fni);
     }
 
     @Test
-    public void bTest() throws Exception {
+    public void wordSearchTest() throws Exception {
         FilesIndex fni;
-        fni = new FilesIndexSerializer(dirPath+"\\index.ser").deserialize();
+        fni = new FilesIndexSerializer(dirPath + "\\" + defaultIndFilename).deserialize();
         String word = "is";
         Map<Path, PosFreqPair> filesWordPosMap = fni.wordSearch(word);
         if (filesWordPosMap.isEmpty()) {
@@ -48,5 +52,7 @@ public class FilesIndexTest {
             System.out.println("Word '" + word + "' was found in files:");
             filesWordPosMap.forEach((k, v) -> System.out.println(k + ": Pos - " + v.getPos()+", freq - "+v.getFreq()));
         }
+        fni.getFileIndexNILst().get(0).wordSearch(word, true);
+        fni.getFileIndexNILst().get(1).wordSearch(word, true);
     }
 }
