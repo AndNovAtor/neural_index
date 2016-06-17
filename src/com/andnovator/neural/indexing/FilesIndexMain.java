@@ -8,13 +8,14 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Created by NovAtor on 10.06.2016.
  */
 
 public class FilesIndexMain {
-    private static final Logger slf4jLogger = LoggerFactory.getLogger(FilesIndexMain.class);
+    private static Logger slf4jLogger = null;
 
     public static void main(String[] args) throws IOException {
         if (args.length <= 0) {
@@ -24,36 +25,66 @@ public class FilesIndexMain {
             System.err.println("Not all args");
             return;
         }
-        Path dirPath = Paths.get(args[0]).normalize();
+        Path dirPath = Paths.get(args[0]).normalize(); // Get path for dir - first program arg (needed always)
         String[] comLineArgs = Arrays.copyOfRange(args, 1, args.length);
 
-        Option optionFname = new Option("ifn", "ind_fname", true, "Filename for storage index");
-        optionFname.setArgs(1);
-        optionFname.setOptionalArg(false);
-        Option optionTime = new Option("t", "time", false, "Indexing directory");
+        Option optionIndex = new Option("i", "index", false, "Indexing directory");
+        optionIndex.setOptionalArg(false);
+        Option optionIndFname = new Option("ifn", "ind_fname", true, "Filename for storage index");
+        optionIndFname.setArgs(1);
+        optionIndFname.setOptionalArg(false);
+        Option optionTime = new Option("t", "time", false, "Print time for indexing directory");
         optionTime.setOptionalArg(false);
+        Option optionWSearch = new Option("s", "search", true, "Word for searching in dir by index");
+        optionIndFname.setArgs(1);
+        optionIndFname.setOptionalArg(false);
         Options opts = new Options();
-        opts.addOption(optionFname);
+        opts.addOption(optionIndex);
+        opts.addOption(optionIndFname);
         opts.addOption(optionTime);
-        CommandLineParser cmdLinePosixParser = new DefaultParser();// создаем Posix парсер
+        opts.addOption(optionWSearch);
+        CommandLineParser cmdLinePosixParser = new DefaultParser();
         CommandLine commandLine;
 
         try {
-            commandLine = cmdLinePosixParser.parse(opts, comLineArgs);// парсим командную строку
+            commandLine = cmdLinePosixParser.parse(opts, comLineArgs);
         } catch (ParseException e) {
             System.out.println("Args was not parsed");
             return;
         }
 
-        String indFileName = "neural_index";
-        boolean printDuration = commandLine.hasOption("t");
-        if (commandLine.hasOption("ifn")) { // проверяем, передавали ли нам команду l, сравнение будет идти с первым представлением опции, в нашем случаее это было однобуквенное представление l
-            indFileName = commandLine.getOptionValues("ifn")[0];// если такая опция есть, то получаем переданные ей аргументы
+        String indFileName = ".neural_index";
+        boolean printDuration = commandLine.hasOption('t');
+        if (commandLine.hasOption("ifn")) { // Check - param arg exists?
+            indFileName = commandLine.getOptionValues("ifn")[0];// If yes - get it args/arg
         }
-//        System.out.println(dirPath);
-//        System.out.println(indFileName);
-//        System.out.println(printDuration);
-//        System.out.println(Paths.get(dirPath));
+
+        boolean needIndex = commandLine.hasOption('i');
+        boolean needSearch = commandLine.hasOption("s");
+        if (needIndex) {
+            slf4jLogger = LoggerFactory.getLogger(FilesIndexMain.class);
+            index(dirPath, indFileName, printDuration);
+        }
+        if (needSearch) {
+            if (slf4jLogger == null) {
+                slf4jLogger = LoggerFactory.getLogger(FilesIndexMain.class);
+            }
+            try {
+                for (String word : commandLine.getOptionValues('s')) {
+                    word_search(dirPath, indFileName, word);
+                }
+            } catch (ClassNotFoundException e) {
+                System.err.println("Error when deserialize index network with message:");
+                System.err.println(e.getMessage());
+                System.err.println("Exit...");
+            }
+
+        } else if (!(needIndex || needSearch)) {
+            System.out.println("No args for index dir or search word in dir by index");
+        }
+    }
+
+    private static void index(Path dirPath, String indFileName, boolean printDuration) throws IOException {
         slf4jLogger.info("Start indexing with NN dir: '" + dirPath.toString() + "'");
         double startMills = System.currentTimeMillis();
         FilesIndex fni = new FilesIndex();
@@ -71,6 +102,17 @@ public class FilesIndexMain {
             slf4jLogger.info("All NI work duration, ms: '" + indexingAllDuration);
             slf4jLogger.info("Train NI network duration, m: '" + indexingTrainigDuration / 1000 / 60);
             slf4jLogger.info("All NI work duration, m: '" + indexingAllDuration / 1000 / 60);
+        }
+    }
+
+    private static void word_search(Path dirPath, String indFileName, String word) throws IOException, ClassNotFoundException {
+        FilesIndex fni = new FilesIndexSerializer(Paths.get(dirPath.toString(), indFileName + ".ser")).deserialize();
+        Map<Path, PosFreqPair> filesWordPosMap = fni.wordSearch(word);
+        if (filesWordPosMap.isEmpty()) {
+            System.out.println("Word '" + word + "' not found in dir: " + dirPath);
+        } else {
+            System.out.println("Word '" + word + "' was found in files:");
+            filesWordPosMap.forEach((k, v) -> System.out.println(k + ": Pos - " + v.getPos() + ", freq - " + v.getFreq()));
         }
     }
 }

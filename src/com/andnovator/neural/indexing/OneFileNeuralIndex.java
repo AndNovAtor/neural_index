@@ -289,16 +289,17 @@ public class OneFileNeuralIndex {
     // FIXME: use staic constant, for example - NOT in code
     // Warning: trainIndex shuffle input allWordsList!!!!
     public boolean trainIndex(Map<String, PosFreqPair> itemWordsMap, List<String> allWordsList, boolean recreateNetwork) {
-//        return trainIndex(itemWordsMap, allWordsList, 15);
         return trainIndex(itemWordsMap, allWordsList, maxStrLengthInLst(allWordsList), recreateNetwork);
     }
     public boolean trainIndex(Map<String, PosFreqPair> itemWordsMap, List<String> allWordsList) {
-//        return trainIndex(itemWordsMap, allWordsList, 15);
         return trainIndex(itemWordsMap, allWordsList, maxStrLengthInLst(allWordsList), true);
     }
 
+    public boolean trainIndex(Map<String, PosFreqPair> itemWordsMap, List<String> allWordsList, int maxLangWordLength) {
+        return trainIndex(itemWordsMap, allWordsList, maxLangWordLength, true);
+    }
+
     public boolean trainIndex(Map<String, PosFreqPair> itemWordsMap, List<String> allWordsList, int maxLangWordLength, boolean recreateNetwork) {
-//        createNINetwork(maxMapStrLengthInLst(itemWordsMap), 1e-4);
         if ((neuroIndexNetwork == null) || recreateNetwork) {
             createNINetwork(maxLangWordLength, networkMinMSE);
         }

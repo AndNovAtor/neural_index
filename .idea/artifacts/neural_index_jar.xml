@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact name="neural_index:jar">
-    <output-path>$PROJECT_DIR$/build</output-path>
+    <output-path>$PROJECT_DIR$/build/bin</output-path>
     <root id="root">
       <element id="archive" name="neural_index.jar">
         <element id="module-output" name="neural_index" />

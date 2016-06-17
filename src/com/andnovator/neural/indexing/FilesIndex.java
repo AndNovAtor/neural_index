@@ -29,11 +29,10 @@ public class FilesIndex {
     private int wordMaxLength = 20;
     static protected final int bitsForChar = 5;
     private int inputsNum = wordMaxLength * bitsForChar;
-    private int maxFileNum = 3;
 
     private int filesIndexedNum;
 
-    private int outputBitsNum = maxFileNum + 1;
+    private int outputBitsNum = filesIndexedNum + 1;
 
     static private double defaultNetworkMinMSE = 3e-2;
     private double networkMinMSE = defaultNetworkMinMSE;
@@ -97,7 +96,7 @@ public class FilesIndex {
         inputsNum = filesIndexNN.getInputsNum();
         wordMaxLength = inputsNum / bitsForChar;
         outputBitsNum = filesIndexNN.getOutputsNum();
-        maxFileNum = outputBitsNum  - 1;
+        filesIndexedNum = outputBitsNum - 1;
     }
     private void setMaxWordLength(int length) {
         wordMaxLength = length;
@@ -127,9 +126,10 @@ public class FilesIndex {
         }
     }
 
-    void setMaxFileNum(int maxFileNum) { this.maxFileNum = maxFileNum; }
-    void setFilesIndexedNum(int filesIndexedNum) { this.filesIndexedNum = filesIndexedNum; }
-    public int getMaxFileNum() { return maxFileNum; }
+    void setFilesIndexedNum(int filesIndexedNum) {
+        this.filesIndexedNum = filesIndexedNum;
+        this.outputBitsNum = filesIndexedNum + 1;
+    }
     public int getFilesIndexedNum() { return filesIndexedNum; }
 
     public List<Path> getFilesPath() {
@@ -163,7 +163,7 @@ public class FilesIndex {
                 .filter(p -> plainTxtExt
                         .contains(p.toString().toLowerCase().substring(p.toString().lastIndexOf('.'))))
                 .collect(toList());
-        filesIndexedNum = filesPath.size();
+        setFilesIndexedNum(filesPath.size());
         for (Path filepath : filesPath) {
             allFileWords.addAll(FileLemmatizationUtils.loadFileLemms(filepath));
         }
@@ -182,7 +182,7 @@ public class FilesIndex {
             oneFileNI = new OneFileNeuralIndex();
             oneFileNI.setNetworkMinMSE(0.1);
             // Warning: trainIndex shuffle input allWordsList!!!!
-            oneFileNI.trainIndex(wordsMapOneFile, allWordsLst);
+            oneFileNI.trainIndex(wordsMapOneFile, allWordsLst, getWordMaxLength());
             addFileNI(oneFileNI);
         }
 
@@ -209,9 +209,6 @@ public class FilesIndex {
         List<Double> res = new ArrayList<>();
         res.add(1.);
         res.addAll(wordsByFile.stream().map(fileWords -> fileWords.contains(word) ? +1. : -1.).collect(Collectors.toList()));
-        for (int i = filesIndexedNum; i <maxFileNum; ++i ) {
-            res.add(-1.);
-        }
         return res;
         /*return IntStream.range(0, filesIndexedNum)
                 // если в файле #fileIndex содержится слово word - то +1, иначе -1
@@ -232,17 +229,19 @@ public class FilesIndex {
         Map<Path, PosFreqPair> resMap = new HashMap<>();
         List<Double> resArrLst = wordSearchNetResponce(word, isResPrint);
         if (resArrLst != null) {
-            int niInd = 0;
-            int[] ressArr;
-            for (Double respDouble : resArrLst.subList(1, filesIndexedNum + 1)) {
-                if (OneFileNeuralIndex.isDoubleBitOne(respDouble)) {
-                    ressArr = fileIndexNILst.get(niInd).wordSearchNormal(word, isResPrint);
-                    if (ressArr[0] != -1) {
-                        // Fixme: maybe not arraylist, so maybe not .get but iterator
-                        resMap.put(filesPath.get(niInd), new PosFreqPair(ressArr[0], ressArr[1]));
+            if (OneFileNeuralIndex.isDoubleBitOne(resArrLst.get(0))) {
+                int niInd = 0;
+                int[] ressArr;
+                for (Double respDouble : resArrLst.subList(1, filesIndexedNum + 1)) {
+                    if (OneFileNeuralIndex.isDoubleBitOne(respDouble)) {
+                        ressArr = fileIndexNILst.get(niInd).wordSearchNormal(word, isResPrint);
+                        if (ressArr[0] != -1) {
+                            // Fixme: maybe not arraylist, so maybe not .get but iterator
+                            resMap.put(filesPath.get(niInd), new PosFreqPair(ressArr[0], ressArr[1]));
+                        }
                     }
+                    ++niInd;
                 }
-                ++niInd;
             }
         }
         return resMap;
