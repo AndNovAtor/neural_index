@@ -169,22 +169,26 @@ public class FilesIndex {
         }
         allWords.addAll(allFileWords);
         allWordsLst = new ArrayList<>(allWords);
-        Map<String, PosFreqPair> wordsMapOneFile;
-        OneFileNeuralIndex oneFileNI;
         wordsByFile = new ArrayList<>(filesIndexedNum);
 
         setMaxWordLength(Math.max(OneFileNeuralIndex.maxStrLengthInLst(allWords), wordMaxLength));
 
-        for (Path path : filesPath) {
-            wordsMapOneFile = IndexingFileLoader.loadFile(path);
+        wordsByFile = filesPath.parallelStream().map(path -> {
+            Map<String, PosFreqPair> wordsMapOneFile = null;
+            try {
+                wordsMapOneFile = IndexingFileLoader.loadFile(path);
+            } catch (IOException e) {
+                // TODO: есть какой-то готовый способ "wrap as unckecked?"
+                throw new RuntimeException(e);
+            }
             Set<String> wordsSet = wordsMapOneFile.keySet();
-            wordsByFile.add(wordsSet);
-            oneFileNI = new OneFileNeuralIndex();
+            OneFileNeuralIndex oneFileNI = new OneFileNeuralIndex();
             oneFileNI.setNetworkMinMSE(0.1);
             // Warning: trainIndex shuffle input allWordsList!!!!
             oneFileNI.trainIndex(wordsMapOneFile, allWordsLst, getWordMaxLength());
             addFileNI(oneFileNI);
-        }
+            return wordsSet;
+        }).collect(Collectors.toList());
 
         // Now train big net
         List<List<Double>> wordsToFeed = new ArrayList<>(allFileWords.size());
@@ -217,6 +221,7 @@ public class FilesIndex {
                 .collect(toList());*/
     }
 
+    synchronized
     public void addFileNI(OneFileNeuralIndex niNN) {
         fileIndexNILst.add(niNN);
     }

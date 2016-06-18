@@ -15,11 +15,12 @@ public class Stopwatch {
 
     private long start = now();
 
-    private static ThreadLocal<SimpleDateFormat> format = new ThreadLocal<>();
-
-    static {
-        format.set(new SimpleDateFormat("HH:mm:ss.SSS"));
-    }
+    private static ThreadLocal<SimpleDateFormat> format = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("HH:mm:ss.SSS");
+        }
+    };
 
     public void start() {
         start = now();
