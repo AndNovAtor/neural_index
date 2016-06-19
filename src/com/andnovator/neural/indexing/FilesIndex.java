@@ -17,7 +17,7 @@ import static java.util.stream.Collectors.toList;
 /**
  * Created by novator on 16.05.2016.
  */
-public class FilesIndex {
+public class FilesIndex implements Trainable {
     NeuralNetwork filesIndexNN = null;
     private List<Path> filesPath = Collections.emptyList();
     List<OneFileNeuralIndex> fileIndexNILst = new ArrayList<>();
@@ -36,6 +36,8 @@ public class FilesIndex {
 
     static private double defaultNetworkMinMSE = 3e-2;
     private double networkMinMSE = defaultNetworkMinMSE;
+    private List<List<Double>> wordsToFeed;
+    private List<List<Double>> trainingSample;
 
     public FilesIndex() {
         filesIndexNN = null;
@@ -165,7 +167,10 @@ public class FilesIndex {
                 .collect(toList());
         setFilesIndexedNum(filesPath.size());
         for (Path filepath : filesPath) {
-            allFileWords.addAll(FileLemmatizationUtils.loadFileLemms(filepath));
+            Map<String, PosFreqPair> wordsMapOneFile = IndexingFileLoader.loadFile(filepath);
+            Set<String> wordsSet = wordsMapOneFile.keySet();
+            wordsByFile.add(wordsSet);
+            allFileWords.addAll(wordsSet);
         }
         allWords.addAll(allFileWords);
         allWordsLst = new ArrayList<>(allWords);
@@ -173,8 +178,9 @@ public class FilesIndex {
 
         setMaxWordLength(Math.max(OneFileNeuralIndex.maxStrLengthInLst(allWords), wordMaxLength));
 
-        wordsByFile = filesPath.parallelStream().map(path -> {
+        List<OneFileNeuralIndex> oneFileIndexes = filesPath.parallelStream().map(path -> {
             Map<String, PosFreqPair> wordsMapOneFile = null;
+            // todo: USE AGAIN allFileWords
             try {
                 wordsMapOneFile = IndexingFileLoader.loadFile(path);
             } catch (IOException e) {
@@ -185,14 +191,14 @@ public class FilesIndex {
             OneFileNeuralIndex oneFileNI = new OneFileNeuralIndex();
             oneFileNI.setNetworkMinMSE(0.1);
             // Warning: trainIndex shuffle input allWordsList!!!!
-            oneFileNI.trainIndex(wordsMapOneFile, allWordsLst, getWordMaxLength());
-            addFileNI(oneFileNI);
-            return wordsSet;
+            oneFileNI.setTrainingSample(wordsMapOneFile, allWordsLst, getWordMaxLength());
+            return oneFileNI;
         }).collect(Collectors.toList());
+        addFileNIs(oneFileIndexes);
 
         // Now train big net
-        List<List<Double>> wordsToFeed = new ArrayList<>(allFileWords.size());
-        List<List<Double>> trainingSample = new ArrayList<>(wordsToFeed.size());
+        wordsToFeed = new ArrayList<>(allFileWords.size());
+        trainingSample = new ArrayList<>(wordsToFeed.size());
 
         for (String word : allFileWords) {
             wordsToFeed.add(OneFileNeuralIndex.strToDoubleBitArrList(word, inputsNum));
@@ -207,8 +213,21 @@ public class FilesIndex {
         }
 
         createNINetwork();
-        filesIndexNN.Train(wordsToFeed, trainingSample);
+
+        List<Trainable> allToTrain = new ArrayList<>(oneFileIndexes);
+        allToTrain.add(this);
+
+        allToTrain.forEach(Trainable::train);
     }
+
+    @Override
+    public boolean train() {
+        if (wordsToFeed == null || trainingSample == null) {
+            return false;
+        }
+        return filesIndexNN.Train(wordsToFeed, trainingSample);
+    }
+
     private List<Double> findFilesForWord(String word) {
         List<Double> res = new ArrayList<>();
         res.add(1.);
@@ -226,6 +245,9 @@ public class FilesIndex {
         fileIndexNILst.add(niNN);
     }
 
+    public void addFileNIs(Collection<OneFileNeuralIndex> nis) {
+        fileIndexNILst.addAll(nis);
+    }
 
     public Map<Path, PosFreqPair> wordSearchNormal(String word){
         return wordSearchNormal(word, false);

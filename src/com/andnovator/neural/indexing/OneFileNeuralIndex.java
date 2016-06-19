@@ -14,7 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * Indexing of contents of one file
  * Created by novator on 03.05.2016.
  */
-public class OneFileNeuralIndex {
+public class OneFileNeuralIndex implements Trainable {
     private NeuralNetwork neuroIndexNetwork;
     private int wordMaxLength = 15;
     static private final int bitsForChar = FilesIndex.bitsForChar;
@@ -26,6 +26,8 @@ public class OneFileNeuralIndex {
     private double networkMinMSE = defaultNetworkMinMSE;
 
     static private double defaultNetworkMinMSE = 1e-2;
+    private List<List<Double>> wordsToFeed;
+    private List<List<Double>> trainingSample;
 
 
     public OneFileNeuralIndex() {
@@ -299,12 +301,22 @@ public class OneFileNeuralIndex {
         return trainIndex(itemWordsMap, allWordsList, maxLangWordLength, true);
     }
 
+    public void setTrainingSample(Map<String, PosFreqPair> itemWordsMap, List<String> allWordsList, int maxLangWordLength) {
+        setTrainingSample(itemWordsMap, allWordsList, maxLangWordLength, true);
+    }
+
+
     public boolean trainIndex(Map<String, PosFreqPair> itemWordsMap, List<String> allWordsList, int maxLangWordLength, boolean recreateNetwork) {
+        setTrainingSample(itemWordsMap, allWordsList, maxLangWordLength, recreateNetwork);
+        return train();
+    }
+
+    public void setTrainingSample(Map<String, PosFreqPair> itemWordsMap, List<String> allWordsList, int maxLangWordLength, boolean recreateNetwork) {
         if ((neuroIndexNetwork == null) || recreateNetwork) {
             createNINetwork(maxLangWordLength, networkMinMSE);
         }
-        List<List<Double>> wordsToFeed = new ArrayList<>();
-        List<List<Double>> trainingSample = new ArrayList<>();
+        wordsToFeed = new ArrayList<>();
+        trainingSample = new ArrayList<>();
         for (String word : itemWordsMap.keySet()) {
             wordsToFeed.add(strToDoubleBits(word));
             trainingSample.add(posFreqToDoubleBits(itemWordsMap.get(word)));
@@ -322,12 +334,21 @@ public class OneFileNeuralIndex {
             int wordsAdded = 0;
             for (String otherWord : allWordsList) {
                 if (itemWordsMap.get(otherWord) == null) {
-                    if (wordsAdded>=someConstantOtherWordFeedNum) { break; }
+                    if (wordsAdded >= someConstantOtherWordFeedNum) {
+                        break;
+                    }
                     wordsToFeed.add(strToDoubleBits(otherWord));
                     trainingSample.add(posFreqToDoubleBits(new PosFreqPair(0, 0)));
                     ++wordsAdded;
                 }
             }
+        }
+    }
+
+    @Override
+    public boolean train() {
+        if (wordsToFeed == null || trainingSample == null) {
+            return false;
         }
         return neuroIndexNetwork.Train(wordsToFeed, trainingSample);
     }
